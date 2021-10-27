@@ -3,14 +3,8 @@ const express = require('express')
 //Create a new instance of express
 const app = express()
 
-//Access the connection to Heroku Database
-const pool = require('./utilities').pool
 
 let middleware = require('./middleware')
-
-const validation = require('./utilities').validation
-
-let isStringProvided = validation.isStringProvided
 
 
 /*
@@ -31,21 +25,6 @@ app.use('/auth', require('./routes/register.js'))
 app.use('/hello', require('./routes/hello.js'))
 
 app.use('/params', require('./routes/params.js'))
-
-app.use('/demosql', require('./routes/demosql.js'))
-
-app.use('/phish', middleware.checkToken, require('./routes/phish.js'))
-
-app.get("/wait", (request, response) => {
-    setTimeout(() => {
-        response.send({
-            message: "Thanks for waiting"
-        });
-    }, 5000)
-})
-
-
-
 
 
 /*
