@@ -1,15 +1,12 @@
 {
-    "name": "TCSS 450 Lab Web Service",
+    "name": "TCSS 450 Chat App Web Service",
     "version": "0.1.0",
-    "description": "The TCSS 450 Lab Web Service API Documentation",
+    "description": "The TCSS 450 Chat Application Service API Documentation",
     "title": "Lab API Doc",
-    "url" : "https://skomegna-tcss450-labs.herokuapp.com/",
+    "url" : "https://team-1-tcss-450-server.herokuapp.com/",
     "order": [
       "Hello",
       "Params",
-      "Wait",
-      "DemoSql",
-      "Auth",
-      "Phish"
+      "Auth"
     ]
   }
