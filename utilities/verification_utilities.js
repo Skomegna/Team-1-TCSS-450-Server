@@ -6,3 +6,6 @@ function createCode() {
 
 
 
+module.exports = { 
+    createCode
+}
