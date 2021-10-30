@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS Members;
 CREATE TABLE Members (MemberID SERIAL PRIMARY KEY,
                       FirstName VARCHAR(255) NOT NULL,
 		              LastName VARCHAR(255) NOT NULL,
-                      Username VARCHAR(255) NOT NULL UNIQUE,
+                      Nickname VARCHAR(255) NOT NULL UNIQUE,
                       Email VARCHAR(255) NOT NULL UNIQUE,
                       Password VARCHAR(255) NOT NULL,
                       SALT VARCHAR(255),
@@ -49,13 +49,6 @@ CREATE TABLE Locations (PrimaryKey SERIAL PRIMARY KEY,
                         ZIP INT,
                         FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
 );
-
-DROP TABLE IF EXISTS Demo;
-CREATE TABLE Demo (DemoID SERIAL PRIMARY KEY,
-                        Name VARCHAR(255) NOT NULL UNIQUE,
-                        Message VARCHAR(255)
-);
-
 
 DROP TABLE IF EXISTS Push_Token;
 CREATE TABLE Push_Token (KeyID SERIAL PRIMARY KEY,

@@ -49,28 +49,28 @@ const router = express.Router()
 router.post('/', (request, response) => {
 
     //Retrieve data from query params
-    const first = request.body.first
-    const last = request.body.last
-    const username = isStringProvided(request.body.username) ?  request.body.username : request.body.email
-    const email = request.body.email
-    const password = request.body.password
+    const first = request.body.first;
+    const last = request.body.last;
+    const nickname = request.body.nickname;
+    const email = request.body.email;
+    const password = request.body.password;
     //Verify that the caller supplied all the parameters
     //In js, empty strings or null values evaluate to false
     if(isStringProvided(first) 
         && isStringProvided(last) 
-        && isStringProvided(username) 
+        && isStringProvided(nickname) 
         && isStringProvided(email) 
         && isStringProvided(password)) {
         //We're storing salted hashes to make our application more secure
         //If you're interested as to what that is, and why we should use it
         //watch this youtube video: https://www.youtube.com/watch?v=8ZtInClXe1Q
-        let salt = generateSalt(32)
-        let salted_hash = generateHash(password, salt)
+        let salt = generateSalt(32);
+        let salted_hash = generateHash(password, salt);
         
         //We're using placeholders ($1, $2, $3) in the SQL query string to avoid SQL Injection
         //If you want to read more: https://stackoverflow.com/a/8265319
-        let theQuery = "INSERT INTO MEMBERS(FirstName, LastName, Username, Email, Password, Salt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING Email"
-        let values = [first, last, username, email, salted_hash, salt]
+        let theQuery = "INSERT INTO MEMBERS(FirstName, LastName, Nickname, Email, Password, Salt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING Email"
+        let values = [first, last, nickname, email, salted_hash, salt]
         pool.query(theQuery, values)
             .then(result => {
                 //We successfully added the user!
