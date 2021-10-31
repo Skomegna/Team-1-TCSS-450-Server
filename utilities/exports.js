@@ -6,7 +6,7 @@ const credUtils = require('./credentialingUtils')
 const generateHash = credUtils.generateHash
 const generateSalt = credUtils.generateSalt
 
-const validation = require('./validationUtils.js')
+const validation = require('./validation_utilities.js')
 
 const sendEmail = require('./email.js').sendEmail
 
