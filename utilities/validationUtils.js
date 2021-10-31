@@ -21,28 +21,8 @@ let isStringProvided = (param) =>
   return myNumber;
 }
 
-function storeCode(theEmail, theCode) {
-  
-  let theCodeQuery = "INSERT INTO VerificationCode (Email, Code) VALUES ($1, $2)" 
-  let theValues = [email, theCode];
-    pool.query(theCodeQuery, theValues)
-      .then (result => {
-          response.status(201).send({
-            success: true
-          })        
-      })
-      .catch((error) => {
-        //log the error
-        // console.log(error)
-        console.log(err.stack)
-        response.status(400).send({
-        message: err.detail
-      })
-  })
-}
-  
+
 module.exports = { 
   createCode,
-  isStringProvided,
-  storeCode
+  isStringProvided
 }
