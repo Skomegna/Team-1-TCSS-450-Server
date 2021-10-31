@@ -38,21 +38,30 @@ router.post("/", (request, response, next) => {
     let theValues = [email];
     pool.query(theCodeQuery, theValues)
         .then (result => {
-            if (result.rows[0].code == userCode) {
+            if (result.rows[0].code === userCode) {
                 next();
+            } else if (result.rows === 0) {
+                response.status(400).send({
+                    message: "Incorrect account information"
+                });   
             } else {
                 response.status(400).send({
                     message: "Incorrect Code"
                 });
             }
         })
-        .catch((err) => {
-            //log the error
-            console.log(err.stack)
-            response.status(400).send({
-                message: err.detail
-            })
-        })
+        .catch((error) => {
+            if (error.detail === undefined) {
+                    response.status(400).send({
+                        message: "Please check credentials and try again."
+                    });
+                } else {
+                    response.status(400).send({
+                        message: "other error, see detail",
+                        //detail: error.detail     
+                    });
+                };
+        });
 
 }, (request, response) => {
     const email = request.body.email;
@@ -63,15 +72,15 @@ router.post("/", (request, response, next) => {
             response.status(201).send({
                 success: true,
                 //is there something you want me to return here?
-            })
+            });
         })
         .catch((err) => {
             //log the error
-            console.log(err.stack)
+            console.log(err.stack);
             response.status(400).send({
                 message: err.detail
-            })
-        })
-})
+            });
+        });
+});
 
-module.exports = router
+module.exports = router;
