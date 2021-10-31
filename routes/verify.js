@@ -1,10 +1,13 @@
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require('express');
 //Create a new instance of express router
-var router = express.Router()
+var router = express.Router();
 
-const validation = require('../utilities').validation
-let isStringProvided = validation.isStringProvided
+const pool = require('../utilities').pool;
+
+
+const validation = require('../utilities').validation;
+let isStringProvided = validation.isStringProvided;
 
 
 /**
@@ -22,8 +25,6 @@ let isStringProvided = validation.isStringProvided
  */ 
 router.post("/", (request, response, next) => {
     if (isStringProvided(request.body.email) && isStringProvided(request.body.code)) {
-        const email = request.body.email;
-        const code = request.body.code;
         next();
     } else {
         response.status(400).send({
@@ -31,11 +32,46 @@ router.post("/", (request, response, next) => {
         })
     }
 }, (request, response, next) => {
-    
+    const email = request.body.email;
+    const userCode = request.body.code;
+    let theCodeQuery = "SELECT Code FROM VerificationCode WHERE Email=$1";
+    let theValues = [email];
+    pool.query(theCodeQuery, theValues)
+        .then (result => {
+            if (result.rows[0].code == userCode) {
+                next();
+            } else {
+                response.status(400).send({
+                    message: "Incorrect Code"
+                });
+            }
+        })
+        .catch((err) => {
+            //log the error
+            console.log(err.stack)
+            response.status(400).send({
+                message: err.detail
+            })
+        })
 
-
-}
-
-)
+}, (request, response) => {
+    const email = request.body.email;
+    let theCodeQuery = "UPDATE Members SET Verification='1' WHERE email=$1"; 
+    let theValues = [email];
+    pool.query(theCodeQuery, theValues)
+        .then (result => {
+            response.status(201).send({
+                success: true,
+                //is there something you want me to return here?
+            })
+        })
+        .catch((err) => {
+            //log the error
+            console.log(err.stack)
+            response.status(400).send({
+                message: err.detail
+            })
+        })
+})
 
 module.exports = router

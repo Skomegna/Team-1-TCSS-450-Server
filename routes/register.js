@@ -107,9 +107,11 @@ router.post('/', (request, response, next) => {
     let email = request.body.email;
     let theValues = [email];
     let theCodeQuery = "DELETE FROM VerificationCode WHERE Email=$1";
+    
     pool.query(theCodeQuery, theValues)
     next();
 }, (request, response) => {
+    
     let tempCode = createCode();
     let email = request.body.email;
     let theCodeQuery = "INSERT INTO VerificationCode (Email, Code) VALUES ($1, $2) " 
