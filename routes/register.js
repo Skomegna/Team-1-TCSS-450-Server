@@ -1,18 +1,18 @@
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require('express');
 
 //Access the connection to Heroku Database
-const pool = require('../utilities').pool
+const pool = require('../utilities').pool;
 
-const validation = require('../utilities').validation
-let isStringProvided = validation.isStringProvided
+const validation = require('../utilities').validation;
+let isStringProvided = validation.isStringProvided;
+const createCode = require('../utilities').validation.createCode;
+const generateHash = require('../utilities').generateHash;
+const generateSalt = require('../utilities').generateSalt;
 
-const generateHash = require('../utilities').generateHash
-const generateSalt = require('../utilities').generateSalt
+const sendEmail = require('../utilities').sendEmail;
 
-const sendEmail = require('../utilities').sendEmail
-
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @api {post} /auth Request to register a user
@@ -46,7 +46,7 @@ const router = express.Router()
  * @apiError (400: Other Error) {String} detail Information about th error
  * 
  */ 
-router.post('/', (request, response) => {
+router.post('/', (request, response, next) => {
 
     //Retrieve data from query params
     const first = request.body.first;
@@ -78,7 +78,7 @@ router.post('/', (request, response) => {
                     success: true,
                     email: result.rows[0].email
                 })
-                sendEmail(email, "Welcome to our App!", "Please verify your Email account.")
+                next();
             })
             .catch((error) => {
                 //log the error
@@ -103,21 +103,25 @@ router.post('/', (request, response) => {
             message: "Missing required information"
         })
     }
+}, (request, response, next) => {
+    let email = request.body.email;
+    let theValues = [email];
+    let theCodeQuery = "DELETE FROM VerificationCode WHERE Email=$1";
+    
+    pool.query(theCodeQuery, theValues)
+    next();
+}, (request, response) => {
+    
+    let tempCode = createCode();
+    let email = request.body.email;
+    let theCodeQuery = "INSERT INTO VerificationCode (Email, Code) VALUES ($1, $2) " 
+    let theValues = [email, tempCode];
+    
+    pool.query(theCodeQuery, theValues)
+      .then (result => {
+        sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + tempCode);     
+      })
+   
 })
-
-router.get('/hash_demo', (request, response) => {
-    let password = 'hello12345'
-
-    let salt = generateSalt(32)
-    let salted_hash = generateHash(password, salt)
-    let unsalted_hash = generateHash(password)
-
-    response.status(200).send({
-        'salt': salt,
-        'salted_hash': salted_hash,
-        'unsalted_hash': unsalted_hash
-    })
-})
-
 
 module.exports = router
