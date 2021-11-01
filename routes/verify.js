@@ -38,9 +38,9 @@ router.post("/", (request, response, next) => {
     let theValues = [email];
     pool.query(theCodeQuery, theValues)
         .then (result => {
-            if (result.rows[0].code === userCode) {
+            if (result.rows[0].code == userCode) {
                 next();
-            } else if (result.rows === 0) {
+            } else if (result.rows == 0) {
                 response.status(400).send({
                     message: "Incorrect account information"
                 });   
@@ -51,7 +51,7 @@ router.post("/", (request, response, next) => {
             }
         })
         .catch((error) => {
-            if (error.detail === undefined) {
+            if (error.detail == undefined) {
                     response.status(400).send({
                         message: "Please check credentials and try again."
                     });
