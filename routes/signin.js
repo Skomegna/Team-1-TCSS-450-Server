@@ -71,7 +71,7 @@ router.get('/', (request, response, next) => {
         })
     }
 }, (request, response) => {
-    const theQuery = "SELECT Password, Salt, MemberId FROM Members WHERE Email=$1"
+    const theQuery = "SELECT Password, Salt, MemberId, Verification FROM Members WHERE Email=$1"
     const values = [request.auth.email]
     pool.query(theQuery, values)
         .then(result => { 
@@ -91,8 +91,12 @@ router.get('/', (request, response, next) => {
             //Generate a hash based on the stored salt and the provided password
             let providedSaltedHash = generateHash(request.auth.password, salt)
 
+            // Retrieve the verification data, if the user verified or not
+            let providedVerification = result.rows[0].verification
+
             //Did our salted hash match their salted hash?
-            if (storedSaltedHash === providedSaltedHash ) {
+            //Did verification match 1 which is true?
+            if (storedSaltedHash === providedSaltedHash) { // && providedVerification === 1) {
                 //credentials match. get a new JWT
                 let token = jwt.sign(
                     {
