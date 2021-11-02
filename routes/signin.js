@@ -91,12 +91,11 @@ router.get('/', (request, response, next) => {
             //Generate a hash based on the stored salt and the provided password
             let providedSaltedHash = generateHash(request.auth.password, salt)
 
-            // Retrieve the verification data, if the user verified or not
-            let providedVerification = result.rows[0].verification
+            // If email is verified
+            let ifVerified = result.rows[0].verification
 
             //Did our salted hash match their salted hash?
-            //Did verification match 1 which is true?
-            if (storedSaltedHash === providedSaltedHash) { // && providedVerification === 1) {
+            if (storedSaltedHash === providedSaltedHash && ifVerified === 1) {
                 //credentials match. get a new JWT
                 let token = jwt.sign(
                     {
