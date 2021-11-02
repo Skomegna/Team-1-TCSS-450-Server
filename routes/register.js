@@ -51,8 +51,8 @@ router.post('/', (request, response, next) => {
     //Retrieve data from query params
     const first = request.body.first;
     const last = request.body.last;
-    const nickname = request.body.nickname;
-    const email = request.body.email;
+    const nickname = (request.body.nickname).toLowerCase();
+    const email = (request.body.email).toLowerCase();
     const password = request.body.password;
     //Verify that the caller supplied all the parameters
     //In js, empty strings or null values evaluate to false
@@ -104,7 +104,7 @@ router.post('/', (request, response, next) => {
         })
     }
 }, (request, response, next) => {
-    let email = request.body.email;
+    let email = (request.body.email).toLowerCase();
     let theValues = [email];
     let theCodeQuery = "DELETE FROM VerificationCode WHERE Email=$1";
     
@@ -113,7 +113,7 @@ router.post('/', (request, response, next) => {
 }, (request, response) => {
     
     let tempCode = createCode();
-    let email = request.body.email;
+    let email = (request.body.email).toLowerCase();
     let theCodeQuery = "INSERT INTO VerificationCode (Email, Code) VALUES ($1, $2) " 
     let theValues = [email, tempCode];
     
@@ -125,3 +125,4 @@ router.post('/', (request, response, next) => {
 })
 
 module.exports = router
+
