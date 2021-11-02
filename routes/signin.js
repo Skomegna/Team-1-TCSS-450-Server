@@ -111,7 +111,7 @@ router.get('/', (request, response, next) => {
                 response.json({
                     success: true,
                     message: 'Authentication successful!',
-                    token: token
+                    token: ifVerified
                 })
             } else if(ifVerified != 1) {
                 //email did not verify
