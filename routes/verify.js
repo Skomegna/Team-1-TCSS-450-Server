@@ -5,10 +5,8 @@ var router = express.Router();
 
 const pool = require('../utilities').pool;
 
-
 const validation = require('../utilities').validation;
 let isStringProvided = validation.isStringProvided;
-
 
 /**
  * @api {post} /verify Request an message echo with a parameter 
@@ -19,9 +17,15 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apuParam {Int} 6 Digit Verification Code 
  * 
- * @apiSuccess {String} Thank you for verification message.
+ * @apiSuccess {String} message "Thank you for verifying"
+ * 
+ * @apiSuccess {boolean} success true when the codes match.
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Incorrect Account) {String} message "Incorrect account information"
+ * @apiError (400: Incorrect Code) {String} message "Incorrect Code"
+ * @apiError (400: Wrong Email) {String} message "Please check credentials and try again."
+ * @apiError (400: Other Error) {String} message "other error, see detail"
  */ 
 router.post("/", (request, response, next) => {
     if (isStringProvided(request.body.email) && isStringProvided(request.body.code)) {
@@ -32,7 +36,7 @@ router.post("/", (request, response, next) => {
         })
     }
 }, (request, response, next) => {
-    const email = request.body.email;
+    const email = (request.body.email).toLowerCase();
     const userCode = request.body.code;
     let theCodeQuery = "SELECT Code FROM VerificationCode WHERE Email=$1";
     let theValues = [email];
@@ -58,20 +62,20 @@ router.post("/", (request, response, next) => {
                 } else {
                     response.status(400).send({
                         message: "other error, see detail",
-                        //detail: error.detail     
+                        detail: error.detail     
                     });
                 };
         });
 
 }, (request, response) => {
-    const email = request.body.email;
+    const email = (request.body.email).toLowerCase();
     let theCodeQuery = "UPDATE Members SET Verification='1' WHERE email=$1"; 
     let theValues = [email];
     pool.query(theCodeQuery, theValues)
         .then (result => {
             response.status(201).send({
                 success: true,
-                //is there something you want me to return here?
+                message: "Thank you for verifying"
             });
         })
         .catch((err) => {
