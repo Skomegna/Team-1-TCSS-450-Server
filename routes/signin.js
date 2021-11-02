@@ -95,6 +95,7 @@ router.get('/', (request, response, next) => {
             let ifVerified = result.rows[0].verification
 
             //Did our salted hash match their salted hash?
+            //Is email verified?
             if (storedSaltedHash === providedSaltedHash && ifVerified == 1) {
                 //credentials match. get a new JWT
                 let token = jwt.sign(
@@ -111,12 +112,12 @@ router.get('/', (request, response, next) => {
                 response.json({
                     success: true,
                     message: 'Authentication successful!',
-                    token: ifVerified // token
+                    token: token
                 })
             } else if(ifVerified != 1) {
                 //email did not verify
                 response.status(400).send({
-                    message: "Email did not verify"
+                    message: "Email is not verify"
                 })
             } else {
                 //credentials dod not match
