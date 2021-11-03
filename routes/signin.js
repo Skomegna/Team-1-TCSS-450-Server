@@ -44,43 +44,47 @@ const config = {
  * 
  * @apiError (400: Invalid Credentials) {String} message "Credentials did not match"
  * 
+ * @apiError (400: Invalid Credentials) {String} message "Email is not verified"
+ * 
+ *  @apiError (400: Other Error) {String} message "other error, see detail"
  */ 
 router.get('/', (request, response, next) => {
     if (isStringProvided(request.headers.authorization) && request.headers.authorization.startsWith('Basic ')) {
-        next()
+        next();
     } else {
-        response.status(400).json({ message: 'Missing Authorization Header' })
-    }
+        response.status(400).json({ message: 'Missing Authorization Header' });
+    };
 }, (request, response, next) => {
     // obtain auth credentials from HTTP Header
-    const base64Credentials =  request.headers.authorization.split(' ')[1]
+    const base64Credentials =  request.headers.authorization.split(' ')[1];
     
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
 
-    const [email, password] = credentials.split(':')
+    const [email, password] = credentials.split(':');
 
     if (isStringProvided(email) && isStringProvided(password)) {
         request.auth = { 
             "email" : email,
             "password" : password
         }
-        next()
+        next();
     } else {
         response.status(400).send({
             message: "Malformed Authorization Header"
-        })
-    }
+        });
+    };
 }, (request, response) => {
-    const theQuery = "SELECT Password, Salt, MemberId FROM Members WHERE Email=$1"
-    const values = [request.auth.email]
+    const theQuery = "SELECT Password, Salt, MemberId, Verification FROM Members WHERE Email=$1";
+    const theEmail = (request.auth.email).toLowerCase();
+    const values = [theEmail];
     pool.query(theQuery, values)
         .then(result => { 
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: 'User not found' 
-                })
-                return
-            }
+                });
+                return;
+            };
 
             //Retrieve the salt used to create the salted-hash provided from the DB
             let salt = result.rows[0].salt
@@ -91,8 +95,12 @@ router.get('/', (request, response, next) => {
             //Generate a hash based on the stored salt and the provided password
             let providedSaltedHash = generateHash(request.auth.password, salt)
 
+            // If email is verified
+            let ifVerified = result.rows[0].verification
+
             //Did our salted hash match their salted hash?
-            if (storedSaltedHash === providedSaltedHash ) {
+            //Is email verified?
+            if (storedSaltedHash === providedSaltedHash && ifVerified == 1) {
                 //credentials match. get a new JWT
                 let token = jwt.sign(
                     {
@@ -103,27 +111,37 @@ router.get('/', (request, response, next) => {
                     { 
                         expiresIn: '14 days' // expires in 14 days
                     }
-                )
+                );
                 //package and send the results
                 response.json({
                     success: true,
                     message: 'Authentication successful!',
                     token: token
-                })
-            } else {
+                });
+            } else if (storedSaltedHash != providedSaltedHash){
                 //credentials dod not match
                 response.status(400).send({
                     message: 'Credentials did not match' 
-                })
-            }
+                });
+            } else if(ifVerified != 1) {
+                //email did not verify
+                response.status(400).send({
+                    message: "Email is not verified"
+                });
+            } else {
+                response.status(400).send({
+                    message: "other error, see detail",
+                    detail: error.detail
+                });
+            };
         })
         .catch((err) => {
             //log the error
             console.log(err.stack)
             response.status(400).send({
                 message: err.detail
-            })
-        })
-})
+            });
+        });
+});
 
-module.exports = router
+module.exports = router;
