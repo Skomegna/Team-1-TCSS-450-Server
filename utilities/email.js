@@ -14,7 +14,7 @@ const nodemailer = require('nodemailer');
 const EMAIL_PASS = process.env.BURNER_EMAIL_PASS;
 
 // the email that will be used to send emails
-const EMAIL = 'tcss450.1.no.reply@gmail.com'
+const EMAIL = 'tcss450.1.no.reply@gmail.com';
 
 
 // sends an email to the given recieverEmail with the
@@ -42,9 +42,9 @@ const sendEmail = (receiverEmail, subject, message) => {
           console.log('Email sent: ' + info.response);
         }
     });
-}
+};
 
 
 module.exports = { 
     sendEmail
-}
+};

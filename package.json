@@ -1,11 +1,11 @@
 {
-  "name": "450-lab",
+  "name": "team-1-server",
   "version": "1.0.0",
-  "description": "TCSS 450 Lab for creating a webservice",
+  "description": "Team 1 Web Service for Mobile Chat Application",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Skomegna/skomegna-tcss450-labs"
+    "url": "https://https://github.com/Skomegna/Team-1-TCSS-450-Server"
   },
   "scripts": {
     "test": "index.js"
@@ -13,9 +13,11 @@
   "keywords": [
     "TCSS450",
     "Mobile",
-    "Apps"
+    "Chat",
+    "App",
+    "Team 1"
   ],
-  "author": "TCSS 450",
+  "author": "Team 1 TCSS 450",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
