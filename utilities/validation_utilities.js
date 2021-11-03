@@ -6,7 +6,7 @@
  * @returns true if the parameter is a String with a length greater than 0, false otherwise
  */
 let isStringProvided = (param) => 
-    param !== undefined && param.length > 0
+    param !== undefined && param.length > 0;
 
 
 /**
@@ -25,4 +25,4 @@ let isStringProvided = (param) =>
 module.exports = { 
   createCode,
   isStringProvided
-}
+};

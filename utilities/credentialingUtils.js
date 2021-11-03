@@ -8,7 +8,7 @@ const crypto = require("crypto");
  * @param {string} salt the salt to use when hashing
  */
 let generateHash = (pw, salt) => 
-    crypto.createHash("sha256").update(pw + salt).digest("hex")
+    crypto.createHash("sha256").update(pw + salt).digest("hex");
 
 /**
  * Creates a random string of hexadecimal characters with the length of size.
@@ -16,8 +16,8 @@ let generateHash = (pw, salt) =>
  * @returns random string of hexadecimal characters
  */
 let generateSalt = (size) => 
-    crypto.randomBytes(size).toString("hex")
+    crypto.randomBytes(size).toString("hex");
 
 module.exports = { 
     generateHash, generateSalt
-}
+};

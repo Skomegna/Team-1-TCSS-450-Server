@@ -1,10 +1,13 @@
 //express is the framework we're going to use to handle requests
 const express = require('express');
+
 //Create a new instance of express router
 var router = express.Router();
 
+//Access the connection to Heroku Database
 const pool = require('../utilities').pool;
 
+//validation tools
 const validation = require('../utilities').validation;
 let isStringProvided = validation.isStringProvided;
 
@@ -17,14 +20,25 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apuParam {Int} 6 Digit Verification Code 
  * 
+ * * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "success": true,
+ *       "message": "Thank you for verifying",
+ *     }
+ * 
  * @apiSuccess {String} message "Thank you for verifying"
  * 
  * @apiSuccess {boolean} success true when the codes match.
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * 
  * @apiError (400: Incorrect Account) {String} message "Incorrect account information"
+ * 
  * @apiError (400: Incorrect Code) {String} message "Incorrect Code"
+ * 
  * @apiError (400: Wrong Email) {String} message "Please check credentials and try again."
+ * 
  * @apiError (400: Other Error) {String} message "other error, see detail"
  */ 
 router.post("/", (request, response, next) => {
@@ -33,14 +47,14 @@ router.post("/", (request, response, next) => {
     } else {
         response.status(400).send({
             message: "Missing required information"
-        })
-    }
+        });
+    };
 }, (request, response, next) => {
     const email = (request.body.email).toLowerCase();
     const userCode = request.body.code;
-    let theCodeQuery = "SELECT Code FROM VerificationCode WHERE Email=$1";
+    let theQuery = "SELECT Code FROM VerificationCode WHERE Email=$1";
     let theValues = [email];
-    pool.query(theCodeQuery, theValues)
+    pool.query(theQuery, theValues)
         .then (result => {
             if (result.rows[0].code == userCode) {
                 next();
@@ -52,7 +66,7 @@ router.post("/", (request, response, next) => {
                 response.status(400).send({
                     message: "Incorrect Code"
                 });
-            }
+            };
         })
         .catch((error) => {
             if (error.detail == undefined) {
@@ -69,9 +83,9 @@ router.post("/", (request, response, next) => {
 
 }, (request, response) => {
     const email = (request.body.email).toLowerCase();
-    let theCodeQuery = "UPDATE Members SET Verification='1' WHERE email=$1"; 
+    let theQuery = "UPDATE Members SET Verification='1' WHERE email=$1"; 
     let theValues = [email];
-    pool.query(theCodeQuery, theValues)
+    pool.query(theQuery, theValues)
         .then (result => {
             response.status(201).send({
                 success: true,

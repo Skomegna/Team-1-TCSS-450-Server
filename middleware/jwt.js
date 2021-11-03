@@ -11,7 +11,7 @@ let checkToken = (req, res, next) => {
     if (token.startsWith('Bearer ')) {
         // Remove Bearer from string
         token = token.slice(7, token.length);
-    }
+    };
 
     jwt.verify(token, config.secret, (err, decoded) => {
       if (err) {
@@ -29,9 +29,9 @@ let checkToken = (req, res, next) => {
       success: false,
       message: 'Auth token is not supplied'
     });
-  }
+  };
 };
 
 module.exports = {
   checkToken: checkToken
-}
+};

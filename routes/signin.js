@@ -1,21 +1,21 @@
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require('express');
 
 //Access the connection to Heroku Database
-const pool = require('../utilities').pool
+const pool = require('../utilities').pool;
 
-const validation = require('../utilities').validation
-let isStringProvided = validation.isStringProvided
+const validation = require('../utilities').validation;
+let isStringProvided = validation.isStringProvided;
 
-const generateHash = require('../utilities').generateHash
+const generateHash = require('../utilities').generateHash;
 
-const router = express.Router()
+const router = express.Router();
 
 //Pull in the JWT module along with out a secret key
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 const config = {
     secret: process.env.JSON_WEB_TOKEN
-}
+};
 
 /**
  * @api {get} /auth Request to sign a user in the system
@@ -87,16 +87,16 @@ router.get('/', (request, response, next) => {
             };
 
             //Retrieve the salt used to create the salted-hash provided from the DB
-            let salt = result.rows[0].salt
+            let salt = result.rows[0].salt;
             
             //Retrieve the salted-hash password provided from the DB
-            let storedSaltedHash = result.rows[0].password 
+            let storedSaltedHash = result.rows[0].password;
 
             //Generate a hash based on the stored salt and the provided password
-            let providedSaltedHash = generateHash(request.auth.password, salt)
+            let providedSaltedHash = generateHash(request.auth.password, salt);
 
             // If email is verified
-            let ifVerified = result.rows[0].verification
+            let ifVerified = result.rows[0].verification;
 
             //Did our salted hash match their salted hash?
             //Is email verified?
