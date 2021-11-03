@@ -24,10 +24,6 @@ app.use('/auth', require('./routes/register.js'));
 
 app.use('/auth/verify', require('./routes/verify.js'));
 
-app.use('/hello', require('./routes/hello.js'));
-
-app.use('/params', require('./routes/params.js'));
-
 
 /*
  * Return HTML for the / end point. 

@@ -74,10 +74,6 @@ router.post('/', (request, response, next) => {
         pool.query(theQuery, values)
             .then(result => {
                 //We successfully added the user!
-                response.status(201).send({
-                    success: true,
-                    email: result.rows[0].email
-                })
                 next();
             })
             .catch((error) => {
@@ -119,6 +115,10 @@ router.post('/', (request, response, next) => {
     
     pool.query(theCodeQuery, theValues)
       .then (result => {
+        response.status(201).send({
+            success: true,
+            email: email
+        })
         sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + tempCode);     
       })
    
