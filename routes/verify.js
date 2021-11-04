@@ -16,9 +16,9 @@ let isStringProvided = validation.isStringProvided;
  * @apiName PostVerify
  * @apiGroup Verify
  * 
- * @apiParam {String} Account email
+ * @apiParam {String} email Account email
  * 
- * @apuParam {Int} 6 Digit Verification Code 
+ * @apiParam {Int} code 6 Digit Verification Code 
  * 
  * * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 201 OK
@@ -40,6 +40,7 @@ let isStringProvided = validation.isStringProvided;
  * @apiError (400: Wrong Email) {String} message "Please check credentials and try again."
  * 
  * @apiError (400: Other Error) {String} message "other error, see detail"
+ * @apiError (400: Other Error) {String} detail  Information about the error
  */ 
 router.post("/", (request, response, next) => {
     if (isStringProvided(request.body.email) && isStringProvided(request.body.code)) {
