@@ -46,7 +46,8 @@ const config = {
  * 
  * @apiError (400: Invalid Credentials) {String} message "Email is not verified"
  * 
- *  @apiError (400: Other Error) {String} message "other error, see detail"
+ * @apiError (400: Other Error) {String} message "other error, see detail"
+ * @apiError (400: Other Error) {String} detail  Information about the errorr
  */ 
 router.get('/', (request, response, next) => {
     if (isStringProvided(request.headers.authorization) && request.headers.authorization.startsWith('Basic ')) {
