@@ -126,7 +126,7 @@ router.post('/', (request, response, next) => {
             success: true,
             email: email
         });
-        sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + tempCode);     
+        sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + userCode);     
       })
    
 });
