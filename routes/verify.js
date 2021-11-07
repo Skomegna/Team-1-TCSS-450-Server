@@ -9,6 +9,7 @@ const pool = require('../utilities').pool;
 
 //validation tools
 const validation = require('../utilities').validation;
+const deleteVerificationCodeRow = require('../utilities').validation.deleteVerificationCodeRow;
 let isStringProvided = validation.isStringProvided;
 
 /**
@@ -81,16 +82,13 @@ router.post("/", (request, response, next) => {
                 };
         });
 
-}, (request, response) => {
+}, (request, response, next) => {
     const email = (request.body.email).toLowerCase();
     let theQuery = "UPDATE Members SET Verification='1' WHERE email=$1"; 
     let theValues = [email];
     pool.query(theQuery, theValues)
         .then (result => {
-            response.status(201).send({
-                success: true,
-                message: "Thank you for verifying"
-            });
+            next();
         })
         .catch((err) => {
             //log the error
@@ -99,6 +97,11 @@ router.post("/", (request, response, next) => {
                 message: err.detail
             });
         });
+}, deleteVerificationCodeRow, (request, response) => {
+    response.status(201).send({
+        success: true,
+        message: "Thank you for verifying"
+    });
 });
 
 module.exports = router;
