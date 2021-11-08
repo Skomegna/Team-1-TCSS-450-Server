@@ -1,0 +1,11 @@
+{
+    "name": "Team 1 TCSS 450 Server",
+    "version": "0.1.0",
+    "description": "Team 1 TCSS 450 Chat Application Service API Documentation",
+    "title": "Team 1 API Document",
+    "url" : "https://team-1-tcss-450-server.herokuapp.com/",
+    "order": [
+      "Auth",
+      "Auth/Verify"
+    ]
+  }
