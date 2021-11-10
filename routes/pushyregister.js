@@ -1,12 +1,12 @@
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require('express');
 
 //Access the connection to Heroku Database
-const pool = require('../utilities/exports').pool
+const pool = require('../utilities/exports').pool;
 
-const router = express.Router()
+const router = express.Router();
 
-const middleware = require('../middleware/exports')
+const middleware = require('../middleware/exports');
 
 /**
  * @api {put} /auth Request to insert a Pushy Token for the user
@@ -32,19 +32,19 @@ router.put('/', middleware.checkToken, (request, response, next) => {
     if (!request.body.token) {
         response.status(400).send({
             message: "Missing required information"
-        })
+        });
     }  else {
-        next()
+        next();
     }
 }, (request, response, next) => {
     //the JWT middleware.js function decodes the JWT and stores the email 
     //and memberId in an object called decoded. It adds this object to 
     //the request object. 
-    let memberid = request.decoded.memberid
+    let memberid = request.decoded.memberid;
 
     //validate email exists
-    let query = 'SELECT * FROM Members WHERE MemberId=$1'
-    let values = [memberid]
+    let query = 'SELECT * FROM Members WHERE MemberId=$1';
+    let values = [memberid];
 
     pool.query(query, values)
         .then(result => {
@@ -54,17 +54,17 @@ router.put('/', middleware.checkToken, (request, response, next) => {
                 //anyway.
                 response.status(404).send({
                     message: "user not found"
-                })
+                });
             } else {
                 //user found
-                next()
+                next();
             }
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
 }, (request, response) => {
     //ON CONFLICT is a Postgressql syntax. it allows for an extra
     //action when conflicts occur with inserts. This will update 
@@ -72,20 +72,20 @@ router.put('/', middleware.checkToken, (request, response, next) => {
     let insert = `INSERT INTO Push_Token(MemberId, Token)
                   VALUES ($1, $2)
                   ON CONFLICT (MemberId) DO UPDATE SET token=$2
-                  RETURNING *`
-    let values = [request.decoded.memberid, request.body.token]
+                  RETURNING *`;
+    let values = [request.decoded.memberid, request.body.token];
     pool.query(insert, values)
         .then(result => {
             response.send({
                 success: true
-            })
+            });
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
-            })
-        })
-})
+            });
+        });
+});
 
 /**
  * @api {delete} /auth Request to delete a Pushy Token for the user
@@ -108,11 +108,11 @@ router.delete('/', middleware.checkToken, (request, response, next) => {
     //the JWT middleware.js function decodes the JWT and stores the email 
     //and memberId in an object called decoded. It adds this object to 
     //the request object. 
-    let memberid = request.decoded.memberid
+    let memberid = request.decoded.memberid;
 
     //validate email exists
-    let query = 'SELECT * FROM Members WHERE MemberId=$1'
-    let values = [memberid]
+    let query = 'SELECT * FROM Members WHERE MemberId=$1';
+    let values = [memberid];
 
     pool.query(query, values)
         .then(result => {
@@ -122,34 +122,34 @@ router.delete('/', middleware.checkToken, (request, response, next) => {
                 //anyway.
                 response.status(404).send({
                     message: "user not found"
-                })
+                });
             } else {
                 //user found
-                next()
-            }
+                next();
+            };
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
 }, (request, response) => {
     //delete the users pushy token
     let insert = `DELETE FROM Push_Token
                   WHERE MemberId=$1
-                  RETURNING *`
-    let values = [request.decoded.memberid]
+                  RETURNING *`;
+    let values = [request.decoded.memberid];
     pool.query(insert, values)
         .then(result => {
             response.send({
                 success: true
-            })
+            });
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
-            })
-        })
-})
+            });
+        });
+});
 
-module.exports = router
+module.exports = router;

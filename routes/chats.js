@@ -1,13 +1,13 @@
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require('express');
 
 //Access the connection to Heroku Database
-const pool = require('../utilities/exports').pool
+const pool = require('../utilities/exports').pool;
 
-const router = express.Router()
+const router = express.Router();
 
-const validation = require('../utilities').validation
-let isStringProvided = validation.isStringProvided
+const validation = require('../utilities').validation;
+let isStringProvided = validation.isStringProvided;
 
 /**
  * @apiDefine JSONError
@@ -39,30 +39,30 @@ router.post("/", (request, response, next) => {
     if (!isStringProvided(request.body.name)) {
         response.status(400).send({
             message: "Missing required information"
-        })
+        });
     } else {
-        next()
-    }
+        next();
+    };
 }, (request, response) => {
 
     let insert = `INSERT INTO Chats(Name)
                   VALUES ($1)
-                  RETURNING ChatId`
-    let values = [request.body.name]
+                  RETURNING ChatId`;
+    let values = [request.body.name];
     pool.query(insert, values)
         .then(result => {
             response.send({
                 success: true,
                 chatID:result.rows[0].chatid
-            })
+            });
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
-            })
+            });
 
-        })
-})
+        });
+});
 
 /**
  * @api {put} /chats/:chatId? Request add a user to a chat
@@ -92,98 +92,97 @@ router.put("/:chatId/", (request, response, next) => {
     if (!request.params.chatId) {
         response.status(400).send({
             message: "Missing required information"
-        })
+        });
     } else if (isNaN(request.params.chatId)) {
         response.status(400).send({
             message: "Malformed parameter. chatId must be a number"
-        })
+        });
     } else {
-        next()
+        next();
     }
 }, (request, response, next) => {
     //validate chat id exists
-    let query = 'SELECT * FROM CHATS WHERE ChatId=$1'
-    let values = [request.params.chatId]
+    let query = 'SELECT * FROM CHATS WHERE ChatId=$1';
+    let values = [request.params.chatId];
 
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: "Chat ID not found"
-                })
+                });
             } else {
-                next()
-            }
+                next();
+            };
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
         //code here based on the results of the query
 }, (request, response, next) => {
     //validate email exists 
-    let query = 'SELECT * FROM Members WHERE MemberId=$1'
-    let values = [request.decoded.memberid]
+    let query = 'SELECT * FROM Members WHERE MemberId=$1';
+    let values = [request.decoded.memberid];
 
-console.log(request.decoded)
+console.log(request.decoded);
 
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: "email not found"
-                })
+                });
             } else {
                 //user found
-                next()
+                next();
             }
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
 }, (request, response, next) => {
         //validate email does not already exist in the chat
-        let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2'
-        let values = [request.params.chatId, request.decoded.memberid]
-    
+        let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2';
+        let values = [request.params.chatId, request.decoded.memberid];
+
         pool.query(query, values)
             .then(result => {
                 if (result.rowCount > 0) {
                     response.status(400).send({
                         message: "user already joined"
-                    })
+                    });
                 } else {
-                    next()
-                }
+                    next();
+                };
             }).catch(error => {
                 response.status(400).send({
                     message: "SQL Error",
                     error: error
-                })
-            })
+                });
+            });
 
 }, (request, response) => {
     //Insert the memberId into the chat
     let insert = `INSERT INTO ChatMembers(ChatId, MemberId)
                   VALUES ($1, $2)
-                  RETURNING *`
-    let values = [request.params.chatId, request.decoded.memberid]
+                  RETURNING *`;
+    let values = [request.params.chatId, request.decoded.memberid];
     pool.query(insert, values)
         .then(result => {
             response.send({
                 success: true
-            })
+            });
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
-            })
-        })
-    }
-)
+            });
+        });
+    });
 
 /**
  * @api {get} /chats/:chatId? Request to get the emails of user in a chat
@@ -211,53 +210,53 @@ router.get("/:chatId", (request, response, next) => {
     if (!request.params.chatId) {
         response.status(400).send({
             message: "Missing required information"
-        })
+        });
     } else if (isNaN(request.params.chatId)) {
         response.status(400).send({
             message: "Malformed parameter. chatId must be a number"
-        })
+        });
     } else {
-        next()
-    }
+        next();
+    };
 },  (request, response, next) => {
     //validate chat id exists
-    let query = 'SELECT * FROM CHATS WHERE ChatId=$1'
-    let values = [request.params.chatId]
+    let query = 'SELECT * FROM CHATS WHERE ChatId=$1';
+    let values = [request.params.chatId];
 
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: "Chat ID not found"
-                })
+                });
             } else {
-                next()
-            }
+                next();
+            };
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
     }, (request, response) => {
         //Retrieve the members
         let query = `SELECT Members.Email 
                     FROM ChatMembers
                     INNER JOIN Members ON ChatMembers.MemberId=Members.MemberId
-                    WHERE ChatId=$1`
-        let values = [request.params.chatId]
+                    WHERE ChatId=$1`;
+        let values = [request.params.chatId];
         pool.query(query, values)
             .then(result => {
                 response.send({
                     rowCount : result.rowCount,
                     rows: result.rows
-                })
+                });
             }).catch(err => {
                 response.status(400).send({
                     message: "SQL Error",
                     error: err
-                })
-            })
+                });
+            });
 });
 
 /**
@@ -288,95 +287,94 @@ router.delete("/:chatId/:email", (request, response, next) => {
     if (!request.params.chatId || !request.params.email) {
         response.status(400).send({
             message: "Missing required information"
-        })
+        });
     } else if (isNaN(request.params.chatId)) {
         response.status(400).send({
             message: "Malformed parameter. chatId must be a number"
-        })
+        });
     } else {
-        next()
+        next();
     }
 }, (request, response, next) => {
     //validate chat id exists
-    let query = 'SELECT * FROM CHATS WHERE ChatId=$1'
-    let values = [request.params.chatId]
+    let query = 'SELECT * FROM CHATS WHERE ChatId=$1';
+    let values = [request.params.chatId];
 
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: "Chat ID not found"
-                })
+                });
             } else {
-                next()
+                next();
             }
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
 }, (request, response, next) => {
     //validate email exists AND convert it to the associated memberId
-    let query = 'SELECT MemberID FROM Members WHERE Email=$1'
-    let values = [request.params.email]
+    let query = 'SELECT MemberID FROM Members WHERE Email=$1';
+    let values = [request.params.email];
 
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 0) {
                 response.status(404).send({
                     message: "email not found"
-                })
+                });
             } else {
-                request.params.email = result.rows[0].memberid
-                next()
+                request.params.email = result.rows[0].memberid;
+                next();
             }
         }).catch(error => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
-            })
-        })
+            });
+        });
 }, (request, response, next) => {
         //validate email exists in the chat
-        let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2'
-        let values = [request.params.chatId, request.params.email]
+        let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2';
+        let values = [request.params.chatId, request.params.email];
     
         pool.query(query, values)
             .then(result => {
                 if (result.rowCount > 0) {
-                    next()
+                    next();
                 } else {
                     response.status(400).send({
                         message: "user not in chat"
-                    })
-                }
+                    });
+                };
             }).catch(error => {
                 response.status(400).send({
                     message: "SQL Error",
                     error: error
-                })
-            })
+                });
+            });
 
 }, (request, response) => {
     //Delete the memberId from the chat
     let insert = `DELETE FROM ChatMembers
                   WHERE ChatId=$1
                   AND MemberId=$2
-                  RETURNING *`
-    let values = [request.params.chatId, request.params.email]
+                  RETURNING *`;
+    let values = [request.params.chatId, request.params.email];
     pool.query(insert, values)
         .then(result => {
             response.send({
                 success: true
-            })
+            });
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
-            })
-        })
-    }
-)
+            });
+        });
+    });
 
-module.exports = router
+module.exports = router;

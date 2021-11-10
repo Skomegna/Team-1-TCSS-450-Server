@@ -22,7 +22,7 @@ let isStringProvided = (param) =>
 function createCode() {
     let myNumber = (Math.floor(Math.random() * 900000) + 100000);
     return myNumber;
-}
+};
 
 
 /**
@@ -55,7 +55,7 @@ function checkNickname(request, response, next) {
                 detail: err.detail
             });
         });
-}
+};
 
 
 /**
@@ -81,9 +81,9 @@ function deleteVerificationCodeRow(request, response, next) {
                 message: "Other error, see detail",
                 detail: err.detail
             });
-        })
+        });
 
-}
+};
 
 // create code, adds to to request
 // add code to database
