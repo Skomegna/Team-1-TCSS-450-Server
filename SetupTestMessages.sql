@@ -13,7 +13,7 @@ WHERE Email='test1@test.com';
 
 --Add the User test1  (password is: test12345)
 INSERT INTO 
-    Members(FirstName, LastName, Username, Email, Password, Salt)
+    Members(FirstName, LastName, Nickname, Email, Password, Salt)
 VALUES
     ('test1First', 'test1Last', 'test1', 'test1@test.com', 'aafc93bbad0671a0531fa95168c4691be3a0d5e033c33a7b8be9941d2702e566', '5a3d1d9d0bda1e4855576fe486c3a188e14a3f1a381ea938cacdb8c799a3205f');
 
@@ -23,7 +23,7 @@ WHERE Email='test2@test.com';
 
 --Add the User test2  (password is: test12345)
 INSERT INTO 
-    Members(FirstName, LastName, Username, Email, Password, Salt)
+    Members(FirstName, LastName, Nickname, Email, Password, Salt)
 VALUES
     ('test2First', 'test2Last', 'test2', 'test2@test.com', 'aafc93bbad0671a0531fa95168c4691be3a0d5e033c33a7b8be9941d2702e566', '5a3d1d9d0bda1e4855576fe486c3a188e14a3f1a381ea938cacdb8c799a3205f');
 
@@ -33,7 +33,7 @@ WHERE Email='test3@test.com';
 
 --Add the User test3 (password is: test12345)
 INSERT INTO 
-    Members(FirstName, LastName, Username, Email, Password, Salt)
+    Members(FirstName, LastName, Nickname, Email, Password, Salt)
 VALUES
     ('test3First', 'test3Last', 'test3', 'test3@test.com', 'aafc93bbad0671a0531fa95168c4691be3a0d5e033c33a7b8be9941d2702e566', '5a3d1d9d0bda1e4855576fe486c3a188e14a3f1a381ea938cacdb8c799a3205f');
 
