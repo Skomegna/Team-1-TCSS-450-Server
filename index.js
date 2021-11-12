@@ -1,8 +1,12 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 //express is the framework we're going to use to handle requests
 const express = require('express');
 //Create a new instance of express
 const app = express();
-
 
 let middleware = require('./middleware');
 

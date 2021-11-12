@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 //express is the framework we're going to use to handle requests
 const express = require('express');
 
@@ -13,9 +18,9 @@ const deleteVerificationCodeRow = require('../utilities').validation.deleteVerif
 let isStringProvided = validation.isStringProvided;
 
 /**
- * @api {post} /verify Request an message echo with a parameter 
+ * @api {post} /verify Verify an account using a code
  * @apiName PostVerify
- * @apiGroup Verify
+ * @apiGroup Auth/Verify
  * 
  * @apiParam {String} email Account email
  * 
@@ -28,9 +33,8 @@ let isStringProvided = validation.isStringProvided;
  *       "message": "Thank you for verifying",
  *     }
  * 
- * @apiSuccess {String} message "Thank you for verifying"
- * 
  * @apiSuccess {boolean} success true when the codes match.
+ * @apiSuccess {String} message "Thank you for verifying"
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 

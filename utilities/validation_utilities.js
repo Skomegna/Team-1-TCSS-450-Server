@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 const express = require('express');
 const pool = require('./sql_conn.js');
 const router = express.Router();

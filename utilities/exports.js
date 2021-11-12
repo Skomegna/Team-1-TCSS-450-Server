@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 //Get the connection to Heroku Database
 const pool = require('./sql_conn.js');
 

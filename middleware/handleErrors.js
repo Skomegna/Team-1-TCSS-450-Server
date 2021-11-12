@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 let jsonErrorInBody = (err, request, response, next) => {
 
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {

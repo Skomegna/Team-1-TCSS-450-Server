@@ -1,12 +1,17 @@
-//express is the framework we're going to use to handle requests
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+  
+ // used to handle requests
 const express = require('express');
 
-//Access the connection to Heroku Database
+// Access the connection to Heroku Database
 const pool = require('../utilities').pool;
 
 const validation = require('../utilities').validation;
 
-//validation tools
+// validation tools
 let isStringProvided = validation.isStringProvided;
 
 const checkNickname = require('../utilities').validation.checkNickname;
@@ -17,6 +22,7 @@ const generateHash = require('../utilities').generateHash;
 
 const generateSalt = require('../utilities').generateSalt;
 
+// function used to send email
 const sendEmail = require('../utilities').sendEmail;
 
 const router = express.Router();
@@ -37,16 +43,15 @@ const router = express.Router();
  *  {
  *      "first":"Charles",
  *      "last":"Bryan",
- *      "nickname": "BigC",
+ *      "nickname": "Big C",
  *      "email":"cfb3@fake.email",
  *      "password":"test12345"
  *  }
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
- * 
  * @apiSuccess (Success 201) {boolean} success true when the name is inserted
- * 
  * @apiSuccess (Success 201) {String} email the email of the user inserted 
+ * 
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
  * @apiError (400: Username exists) {String} message "Username exists"
  * 

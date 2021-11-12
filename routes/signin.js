@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 //express is the framework we're going to use to handle requests
 const express = require('express');
 
@@ -25,7 +30,7 @@ const config = {
  * @apiHeader {String} authorization "username:password" uses Basic Auth 
  * 
  * @apiSuccess {boolean} success true when the name is found and password matches
- * @apiSuccess {String} message "Authentication successful!""
+ * @apiSuccess {String} message "Authentication successful!"
  * @apiSuccess {String} token JSON Web Token
  * 
  *  * @apiSuccessExample {json} Success-Response:
@@ -44,7 +49,7 @@ const config = {
  * 
  * @apiError (400: Invalid Credentials) {String} message "Credentials did not match"
  * 
- * @apiError (400: Invalid Credentials) {String} message "Email is not verified"
+ * @apiError (400: Unverified Email) {String} message "Email is not verified"
  * 
  * @apiError (400: Other Error) {String} message "other error, see detail"
  * @apiError (400: Other Error) {String} detail  Information about the errorr
