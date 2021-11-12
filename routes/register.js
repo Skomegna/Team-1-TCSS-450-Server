@@ -3,7 +3,7 @@
  * Fall 2021
  */
   
- // used to handle requests
+// used to handle requests
 const express = require('express');
 
 // Access the connection to Heroku Database
@@ -14,7 +14,7 @@ const validation = require('../utilities').validation;
 // validation tools
 let isStringProvided = validation.isStringProvided;
 
-const checkNickname = require('../utilities').validation.checkNickname;
+const checkNickname = require('../utilities').database.checkNickname;
 const deleteVerificationCodeRow = require('../utilities').validation.deleteVerificationCodeRow;
 const createAndStoreCode = require('../utilities').validation.createAndStoreCode;
 
@@ -68,7 +68,7 @@ router.post('/', (request, response, next) => {
     const first = request.body.first;
     const last = request.body.last;
     const nickname = request.body.nickname;
-    const email = (request.body.email).toLowerCase();
+    const email = (request.body.email);
     const password = request.body.password;
     
     //Verify that the caller supplied all the parameters
