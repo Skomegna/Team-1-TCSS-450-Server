@@ -4,6 +4,8 @@
  * 
  * Contains the contacts/requests endpoints including
  *      - contacts/requests (POST) Create a new contact request
+ *      - contacts/requests (GET)  Gets a list of contact requests
+ *      - contacts/requests (PUT)  Accepts or rejects a contact request
  */
 
 // used to handle requests
@@ -33,6 +35,10 @@ let isStringProvided = validation.isStringProvided;
  * @apiError (400: SQL Error) {String} message "SQL Error"
  * @apiError (400: SQL Error) {String} error   the error
  */ 
+
+
+
+
 
 /**
  * @api {post} /contacts/requests Request to create a contact request
@@ -172,6 +178,10 @@ router.post('/', (request, response, next) => {
 });
 
 
+
+
+
+
 /**
  * @api {get} /contacts/requests Request to recieve all contact requests an account has been sent.
  * @apiName GetContactRequest
@@ -299,19 +309,13 @@ router.get('/', (request, response, next) => {
 
 
 
-
-
-
-
 /**
  * @api {put} /contacts/requests Request to accept or reject a contact request
  * @apiName PutContactRequest
  * @apiGroup Contacts/Requests
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
- * @apiParam {Number} senderID 
-        the memberID of the account that is creating this request
- * @apiParam {Number} otherID 
+ * @apiParam {String} memberID 
         the memberID of the account you are accepting or rejecting
  * @apiParam {Boolean} isAccepting
         true if the request sender is accepting the request, false if rejecting
@@ -322,7 +326,8 @@ router.get('/', (request, response, next) => {
  * @apiError (400: MemberID does not exist) {String} message
         "MemberID does not exist"
  * 
- * @apiError (400: Invalid Request) {String} message "Contact request does not exist"
+ * @apiError (400: Invalid Request) {String} message 
+        "Contact request does not exist"
  * 
  * @apiUse SQLError
  *
@@ -350,7 +355,7 @@ router.put('/', (request, response, next) => {
     let query = `SELECT * FROM Contact_Requests 
                  WHERE MemberID_A=$1 AND MemberID_B=$2`
     let values = [request.body.memberID, request.decoded.memberid];
-    console.log(values);
+    
     pool.query(query, values)
         .then(result => {
             if (result.rowCount == 1) {
@@ -370,23 +375,60 @@ router.put('/', (request, response, next) => {
                 detail: err.detail
             });
         })
+}, (request, response, next) => {
+    // if the request.body.isAccepting is true, add the connection
+    // in the contacts database
+
+    if (request.body.isAccepting) {
+        
+        let query = `INSERT INTO Contacts (MemberID_A, MemberID_B) 
+                     VALUES ($1, $2)`;
+        let values = [request.body.memberID, request.decoded.memberid];
+
+        pool.query(query, values)
+            .then(result => {
+                // row was inserted successfully, so move on.
+                next();
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    detail: err.detail
+                });
+            });
+    } else {
+
+        // request was rejected, so don't add connection and move on.
+        next();
+    }
+ 
 }, (request, response) => {
+    // delete all instances of a contact request between
+    //  these two members (can be either direction)
 
+    let query = `DELETE FROM Contact_Requests WHERE
+                 (MemberID_A=$1 AND MemberID_B=$2)
+                 OR (MemberID_A=$2 AND MemberID_B=$1)`
+    let values = [request.body.memberID, request.decoded.memberid];
 
-    // AUSTN YOU KNOW THAT THE CONTACT REQUEST EXISTS, SO NOW LETS ADD
-    // TO THE CONTACTS TABLE AND THEN REMOVE ALL ROWS IN THE CONTACT_REQUESTS TABLE
-    response.status(400).send({
-        success: true
-    });
+    pool.query(query, values)
+            .then(result => {
+                // everything was deleted successfully, so response success
+                response.status(400).send({
+                    success: true
+                });
+            })
+            .catch(err => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    detail: err.detail
+                });
+            });   
 });
 
 
 
-module.exports = router;
 
-// might need for later: 
-/*
-    SELECT m.Nickname
-    FROM Members m, Contacts c
-    WHERE m.Memberid = c.Memberid_A
- */
+
+
+module.exports = router;
