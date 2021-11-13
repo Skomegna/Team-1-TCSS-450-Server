@@ -172,8 +172,7 @@ router.post('/', (request, response, next) => {
 
 
 /**
- * @api {get} /contacts/requests Request to recieve all contact 
-                                 requests an account has been sent.
+ * @api {get} /contacts/requests Request to recieve all contact requests an account has been sent.
  * @apiName GetContactRequest
  * @apiGroup Contacts/Requests
  * 
@@ -181,7 +180,28 @@ router.post('/', (request, response, next) => {
  * 
  * @apiSuccess (Success 201) {boolean} success 
         true when the list of contact requests has been created and sent
- * 
+ * @apiSuccess (Success 201) {array} data 
+        an array of contact's information that sent you a request
+ *
+ * @apiSuccessExample {json} Response-Success-Example:
+ *  {
+ *      "success":true,
+ *      "data":[
+ *          {
+ *              "memberid":"42",
+ *              "first":"Charles",
+ *              "last":"Bryan",
+ *              "nickname": "Big C"
+ *          }, 
+ *          {
+ *              "memberid":"167",
+ *              "first":"Austn",
+ *              "last":"Attaway",
+ *              "nickname": "AustnSauce"
+ *          }
+ *      ]
+ *  }
+ *
  * @apiUse SQLError
  *
  * @apiUse JSONError 
@@ -243,7 +263,7 @@ router.get('/', (request, response, next) => {
                 error: err
             });
         });
-        
+
 }, (request, response) => {
     // now we have the data we want to send to the 
     // user stored at request.body.dataRows, so parse it
