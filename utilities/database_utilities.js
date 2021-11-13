@@ -21,6 +21,12 @@ const pool = require('./sql_conn.js');
  * 
  * If the username does not exist, call next.
  * If the username exists, send a 400 error { message: "Username exists" }
+ * 
+ * Can potentially send a 400 error
+ * { 
+ *      message: "SQL Error",
+ *      detail: err.detail
+ * }
  */
  function checkNickname(request, response, next) {
     const nickname = request.body.nickname;
@@ -41,7 +47,7 @@ const pool = require('./sql_conn.js');
             //log the error
             console.log(err.stack);
             response.status(400).send({
-                message: "Other error, see detail",
+                message: "SQL Error",
                 detail: err.detail
             });
         });
@@ -82,11 +88,54 @@ const pool = require('./sql_conn.js');
             //log the error
             console.log(err.stack);
             response.status(400).send({
-                message: "Other error, see detail",
+                message: "SQL Error",
                 detail: err.detail
             });
         });
 };
+
+/**
+ * Checks if the memberiD located at request.body.memberID 
+ * exists within the database Members table. 
+ * 
+ * If the memberID exists, call next.
+ * If the username does not exist, 
+ * send a 400 error { message: "MemberID does not exist" }
+ * 
+ * Can potentially send a 400 error
+ * { 
+ *      message: "SQL Error",
+ *      detail: err.detail
+ * }
+ */
+ function checkMemberIDExists(request, response, next) {
+    const memberID = request.body.memberID;
+    let theValues = [memberID];
+    let theQuery = "SELECT memberID FROM Members WHERE memberID=$1";
+    pool.query(theQuery, theValues)
+        .then(result => {
+            
+            if (result.rowCount == 0) {
+                // query didn't find a memberID so the result array is empty
+                response.status(400).send({
+                    message: "MemberID does not exist"
+                });
+            } else {
+                // nickname found, so move on to next function.
+                next();
+            }
+        })
+        .catch((err) => {
+            //log the error
+            console.log(err.stack);
+            response.status(400).send({
+                message: "SQL Error",
+                detail: err.detail
+            });
+        });
+};
+
+
 
 /**
  * Given a request that has a valid nickname stored at body.nickname, 
@@ -121,5 +170,5 @@ function addMemberID(request, response, next) {
 }
 
 module.exports = {
-    checkNickname, checkNicknameExists, addMemberID
+    checkNickname, checkNicknameExists, checkMemberIDExists, addMemberID
 };

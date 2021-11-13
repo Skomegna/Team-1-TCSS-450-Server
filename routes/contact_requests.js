@@ -17,6 +17,7 @@ const validation = require('../utilities').validation;
 
 const databaseUtils = require('../utilities/exports').database;
 const checkNicknameExists = databaseUtils.checkNicknameExists;
+const checkMemberIDExists = databaseUtils.checkMemberIDExists;
 const addMemberID = databaseUtils.addMemberID;
 
 // validation tools
@@ -291,6 +292,91 @@ router.get('/', (request, response, next) => {
     response.status(201).send({
         success: true,
         data: resultArr
+    });
+});
+
+
+
+
+
+
+
+
+
+/**
+ * @api {put} /contacts/requests Request to accept or reject a contact request
+ * @apiName PutContactRequest
+ * @apiGroup Contacts/Requests
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ * @apiParam {Number} senderID 
+        the memberID of the account that is creating this request
+ * @apiParam {Number} otherID 
+        the memberID of the account you are accepting or rejecting
+ * @apiParam {Boolean} isAccepting
+        true if the request sender is accepting the request, false if rejecting
+ *
+ * @apiError (400: Missing Parameters) {String} message 
+        "Missing required information"
+ * 
+ * @apiError (400: MemberID does not exist) {String} message
+        "MemberID does not exist"
+ * 
+ * @apiError (400: Invalid Request) {String} message "Contact request does not exist"
+ * 
+ * @apiUse SQLError
+ *
+ */
+router.put('/', (request, response, next) => {
+    // ensure that the required information was given
+    let isAcceptingIsBoolean = request.body.isAccepting != undefined
+            && (request.body.isAccepting == true
+            || request.body.isAccepting == false);
+
+    if (isStringProvided(request.body.memberID) 
+            && isAcceptingIsBoolean) {
+        next();
+    } else {
+        // missing required info
+        response.status(400).send({
+            message: "Missing required information"
+        });
+    }
+
+}, checkMemberIDExists, (request, response, next) => {
+    // check to make sure that the request exists between 
+    // the memberID account and the sender of the request
+
+    let query = `SELECT * FROM Contact_Requests 
+                 WHERE MemberID_A=$1 AND MemberID_B=$2`
+    let values = [request.body.memberID, request.decoded.memberid];
+    console.log(values);
+    pool.query(query, values)
+        .then(result => {
+            if (result.rowCount == 1) {
+                // there is a request in the request table, so move on
+                next();
+            } else {
+                // there isn't a request in the request table, so 
+                // responsd accordingly
+                response.status(400).send({
+                    message: "Contact request does not exist",
+                });
+            }
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                detail: err.detail
+            });
+        })
+}, (request, response) => {
+
+
+    // AUSTN YOU KNOW THAT THE CONTACT REQUEST EXISTS, SO NOW LETS ADD
+    // TO THE CONTACTS TABLE AND THEN REMOVE ALL ROWS IN THE CONTACT_REQUESTS TABLE
+    response.status(400).send({
+        success: true
     });
 });
 
