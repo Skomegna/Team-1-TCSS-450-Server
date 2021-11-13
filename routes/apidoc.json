@@ -5,7 +5,10 @@
     "title": "Team 1 API Document",
     "url" : "https://team-1-tcss-450-server.herokuapp.com/",
     "order": [
-      "Auth",
+      "chats/",
+      "messages/",
+      "Auth/",
+      "Auth/ResendCode",
       "Auth/Verify"
     ]
   }

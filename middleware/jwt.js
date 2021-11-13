@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 let jwt = require('jsonwebtoken');
 let config = {
     secret: process.env.JSON_WEB_TOKEN
