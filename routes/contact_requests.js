@@ -34,7 +34,7 @@ let isStringProvided = validation.isStringProvided;
  */ 
 
 /**
- * @apiDefine SqlError
+ * @apiDefine SQLError
  * @apiError (400: SQL Error) {String} message "SQL Error"
  * @apiError (400: SQL Error) {String} error   the error
  */ 
@@ -46,16 +46,26 @@ let isStringProvided = validation.isStringProvided;
  * @apiGroup Contacts/Requests
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
- * @apiParam  {String} nickname the nickname of the account the 
-                                contact request is for
+ * @apiParam  {String} nickname 
+        the nickname of the account the contact request is for
  *
- * @apiSuccess (Success 201) {boolean} success true when the contact request has been created
+ * @apiSuccess (Success 201) {boolean} success 
+        true when the contact request has been created
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+        "Missing required information"
  * 
- * @apiError (400: Invalid nickname) {String} message "Nickname does not exist"
+ * @apiError (400: Invalid nickname) {String} message 
+        "Nickname does not exist"
  * 
- * @apiError (400: Contact Request with Self) {String} message "Can not create contact with oneself"
+ * @apiError (400: Contact Request with Self) {String} message 
+        "Can not create contact with oneself"
+ * 
+ * @apiError (400: Members are Contacts) {String} message 
+        "Members are already contacts"
+ * 
+ * @apiError (400: Contact Request Exists) {String} message 
+        "Contact request already exists"
  * 
  * @apiUse SQLError
  * 
@@ -87,16 +97,44 @@ router.post('/', (request, response, next) => {
     
 }, (request, response, next) => {
     // check to make sure that the two members are not already contacts
-    const query = `SELECT * FROM Contacts 
+    // currently also checks to see if the contact request already exists
+    const query = `SELECT RequestAccepted FROM Contacts 
                    WHERE (MemberID_A=$1 AND MEMBERID_B=$2) 
                    OR (MemberID_A=$2 AND MEMBERID_B=$1)`;
     const values = [request.decoded.memberid, request.body.otherMemberID];
 
-    // todo do the query
+    pool.query(query, values)
+        .then(result => {
+            if (result.rowCount != 0) {
+                // if the row count is greater than 0, we know that there
+                // is an existing connection or contact request between
+                // these two members
+                if (result.rows[0].resquestAccepted == 0)  {
+                    // the members are not contacts yet (it is a request)
+                    // TODO DOCUMENTATION
+                    response.status(400).send({ 
+                        message: "Contact request already exists"
+                    });
+                } else {
+                    // the members are contacts.
+                    // TODO DOCUMENTATION
+                    response.status(400).send({ 
+                        message: "Members are already contacts"
+                    });
+                }
+            } else {
+                next();
+            }
+        })
+        .catch((err) => { 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        })    
     
 }, (request, response) => {
-    // now that we have the ID for the requester and the person we want
-    // to send the request to, we can add the request to the database
+    // add the request to the databasee
     const myID = request.decoded.memberid;
     const otherID = request.body.otherMemberID;
 
@@ -109,8 +147,7 @@ router.post('/', (request, response, next) => {
         .then(result => {
             // successfully stored the contact request in the database
             response.status(201).send({ 
-                success: true,
-                message: "you're a bossman, boss man!"  
+                success: true, 
             });
         })
         .catch((err) => {
