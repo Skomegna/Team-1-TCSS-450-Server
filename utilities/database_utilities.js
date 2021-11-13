@@ -82,6 +82,49 @@ const pool = require('./sql_conn.js');
         });
 };
 
+/**
+ * Given a request that has a valid nickname stored at body.nickname, 
+ * adds the nickname ID to request.body.otherMemberID that corresponds
+ * to the given nickname.
+ * 
+ * Will send the following response if there is an SQL error
+ * Code 400: 
+ * {
+ *      message: "SQL error", 
+ *      error: (the error) 
+ * }
+ * 
+ */
+function addMemberID(request, response, next) {
+    let query = `SELECT Members.memberID
+                  FROM Members
+                  WHERE Nickname=$1`;
+    let values = [request.body.nickname];
+    
+    pool.query(query, values)
+        .then(result => {
+            // get the result from the db and store it
+            request.body.otherMemberID = result.rows[0].memberid;
+            next();
+        }).catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        });  
+}
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = {
-    checkNickname, checkNicknameExists
+    checkNickname, checkNicknameExists, addMemberID
 };

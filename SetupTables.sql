@@ -19,9 +19,11 @@ DROP TABLE IF EXISTS Contacts;
 CREATE TABLE Contacts(PrimaryKey SERIAL PRIMARY KEY,
                       MemberID_A INT NOT NULL,
                       MemberID_B INT NOT NULL,
+                      RequestAccepted INT DEFAULT 0, 
                       FOREIGN KEY(MemberID_A) REFERENCES Members(MemberID),
                       FOREIGN KEY(MemberID_B) REFERENCES Members(MemberID)
 );
+
 
 DROP TABLE IF EXISTS Chats;
 CREATE TABLE Chats (ChatID SERIAL PRIMARY KEY,
@@ -34,6 +36,7 @@ CREATE TABLE ChatMembers (ChatID INT NOT NULL,
                           FOREIGN KEY(MemberID) REFERENCES Members(MemberID),
                           FOREIGN KEY(ChatID) REFERENCES Chats(ChatID)
 );
+
 
 DROP TABLE IF EXISTS Messages;
 CREATE TABLE Messages (PrimaryKey SERIAL PRIMARY KEY,
