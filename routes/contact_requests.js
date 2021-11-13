@@ -25,20 +25,13 @@ let isStringProvided = validation.isStringProvided;
 /**
  * @apiDefine JSONError
  * @apiError (400: JSON Error) {String} message "malformed JSON in parameters"
- */ 
-
-/**
- * @apiDefine OtherError
- * @apiError (400: Other Error) {String} message "Other error, see detail"
- * @apiError (400: Other Error) {String} detail  the detail
- */ 
+ */  
 
 /**
  * @apiDefine SQLError
  * @apiError (400: SQL Error) {String} message "SQL Error"
  * @apiError (400: SQL Error) {String} error   the error
  */ 
-
 
 /**
  * @api {post} /contacts/requests Request to create a contact request
@@ -69,8 +62,6 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apiUse SQLError
  * 
- * @apiUse OtherError
- * 
  * @apiUse JSONError
  */
 router.post('/', (request, response, next) => {
@@ -91,14 +82,13 @@ router.post('/', (request, response, next) => {
         next();
     } else {
         response.status(400).send({
-            message: "Can not create contact with oneself",
+            message: "Can not create contact with oneself"
         });
     }
     
 }, (request, response, next) => {
     // check to make sure that the two members are not already contacts
-    // currently also checks to see if the contact request already exists
-    const query = `SELECT RequestAccepted FROM Contacts 
+    const query = `SELECT * FROM Contacts 
                    WHERE (MemberID_A=$1 AND MEMBERID_B=$2) 
                    OR (MemberID_A=$2 AND MEMBERID_B=$1)`;
     const values = [request.decoded.memberid, request.body.otherMemberID];
@@ -106,22 +96,14 @@ router.post('/', (request, response, next) => {
     pool.query(query, values)
         .then(result => {
             if (result.rowCount != 0) {
+                
                 // if the row count is greater than 0, we know that there
-                // is an existing connection or contact request between
-                // these two members
-                if (result.rows[0].resquestAccepted == 0)  {
-                    // the members are not contacts yet (it is a request)
-                    // TODO DOCUMENTATION
-                    response.status(400).send({ 
-                        message: "Contact request already exists"
-                    });
-                } else {
-                    // the members are contacts.
-                    // TODO DOCUMENTATION
-                    response.status(400).send({ 
-                        message: "Members are already contacts"
-                    });
-                }
+                // is an existing connection between these two members,
+                // so send an appropriate response
+                response.status(400).send({ 
+                    message: "Members are already contacts"
+                });
+            
             } else {
                 next();
             }
@@ -133,16 +115,45 @@ router.post('/', (request, response, next) => {
             });
         })    
     
+}, (request, response, next) => {
+    // checks to see if the contact request from
+    // memberID to otherMemberID already exists
+
+    const query = `SELECT * FROM Contact_Requests 
+                   WHERE (MemberID_A=$1 AND MEMBERID_B=$2) `;
+    const values = [request.decoded.memberid, request.body.otherMemberID];
+
+    pool.query(query, values)
+        .then(result => {
+            if (result.rowCount != 0) {
+                
+                // if the row count is greater than 0, we know that there
+                // is an existing contact request from memberA to memberB.
+                response.status(400).send({ 
+                    message: "Contact request already exists"
+                });
+
+            } else {
+                next();
+            }
+        })
+        .catch((err) => { 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        })
+
 }, (request, response) => {
     // add the request to the databasee
     const myID = request.decoded.memberid;
     const otherID = request.body.otherMemberID;
 
-    let insert = `INSERT INTO Contacts 
+    let insert = `INSERT INTO Contact_Requests 
                   (MemberID_A, MemberID_B) 
                   VALUES ($1, $2)`;
-
     let values = [myID, otherID];
+
     pool.query(insert, values)
         .then(result => {
             // successfully stored the contact request in the database
@@ -163,8 +174,6 @@ router.post('/', (request, response, next) => {
 module.exports = router;
 
 
-
-
 // might need for later: 
 /*
     SELECT m.Nickname
@@ -172,4 +181,4 @@ module.exports = router;
     WHERE m.Memberid = c.Memberid_A
  */
 
-
+    

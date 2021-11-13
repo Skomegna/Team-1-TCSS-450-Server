@@ -54,6 +54,12 @@ const pool = require('./sql_conn.js');
  * If the username exists, call next.
  * If the username does not exist, 
  * send a 400 error { message: "Nickname does not exist" }
+ * 
+ * Can potentially send a 400 error
+ * { 
+ *      message: "SQL Error",
+ *      detail: err.detail
+ * }
  */
  function checkNicknameExists(request, response, next) {
     const nickname = request.body.nickname;
@@ -113,17 +119,6 @@ function addMemberID(request, response, next) {
             });
         });  
 }
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports = {
     checkNickname, checkNicknameExists, addMemberID
