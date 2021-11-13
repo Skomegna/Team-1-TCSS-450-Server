@@ -162,7 +162,7 @@ router.post('/', (request, response, next) => {
             });
         })
         .catch((err) => {
-            // an sql error occurred while trying to 
+            // an sql error occurred
             response.status(400).send({
                 message: "SQL Error",
                 error: err
@@ -171,8 +171,112 @@ router.post('/', (request, response, next) => {
 });
 
 
-module.exports = router;
+/**
+ * @api {get} /contacts/requests Request to recieve all contact 
+                                 requests an account has been sent.
+ * @apiName GetContactRequest
+ * @apiGroup Contacts/Requests
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ * 
+ * @apiSuccess (Success 201) {boolean} success 
+        true when the list of contact requests has been created and sent
+ * 
+ * @apiUse SQLError
+ *
+ * @apiUse JSONError 
+ * 
+ */
+router.get('/', (request, response, next) => {
+    // note: the JWT has already been checked by this point, 
+    // so we can go straight into trying to get all requests
+    // from the database
 
+    let query = `SELECT * FROM Contact_Requests WHERE MemberID_B=$1`;
+    let values = [request.decoded.memberid];
+
+    pool.query(query, values)
+        .then(result => {
+            
+            let resultRows = new Array(result.rowCount);
+            for (let i = 0; i < result.rowCount; i++) {
+                resultRows[i] = result.rows[i].memberid_a;
+            }
+            request.body.requestIDs = resultRows;
+            next();
+    
+        })
+        .catch(err => {
+            // an sql error occurred while trying to 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        });
+
+},  (request, response, next) => {
+    // get the information about each user and add it to the request
+
+    let memberIDs = request.body.requestIDs;
+
+    // if there aren't any contact requests, skip trying to extract data
+    // and move onto next function
+    if (memberIDs.length == 0) {
+        next();
+    }
+
+    let query = "SELECT (memberID, FirstName, LastName, Nickname) "
+            + "FROM Members WHERE ";
+    for (let i = 0; i < memberIDs.length; i++) {
+        query += "memberID=" + memberIDs[i] + " OR ";
+    }
+    query = query.substring(0, query.length - 3);
+    pool.query(query)
+        .then(result => {
+            request.body.dataRows = result.rows;
+            next();
+        })
+        .catch(err => {
+            // an sql error occurred 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        });
+        
+}, (request, response) => {
+    // now we have the data we want to send to the 
+    // user stored at request.body.dataRows, so parse it
+    // into more readable data and send it.
+    
+    const resultArr = [];
+    // format resultArr only if we have data to format
+    if (request.body.requestIDs.length != 0) {
+        const data = request.body.dataRows;
+
+        for (let i = 0; i < data.length; i++) {
+            let rowString = data[i].row;
+            rowString = rowString.substring(1, rowString.length - 1);
+            let arr = rowString.split(',');
+            let resultObj = {
+                "memberid": arr[0],
+                "first": arr[1],
+                "last": arr[2],
+                "nickname": arr[3]
+            };
+            resultArr[i] = resultObj;
+        }
+    }
+
+    response.status(201).send({
+        success: true,
+        data: resultArr
+    });
+});
+
+
+
+module.exports = router;
 
 // might need for later: 
 /*
@@ -180,5 +284,3 @@ module.exports = router;
     FROM Members m, Contacts c
     WHERE m.Memberid = c.Memberid_A
  */
-
-    
