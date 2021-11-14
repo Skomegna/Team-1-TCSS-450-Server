@@ -46,6 +46,9 @@ let isStringProvided = validation.isStringProvided;
  * @apiName PostContactRequest
  * @apiGroup Contacts/Requests
  * 
+ * @apiDescription Creates a contact request from the request 
+                   sender to the account specified by the given nickname
+ * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam  {String} nickname 
         the nickname of the account the contact request is for
@@ -188,6 +191,9 @@ router.post('/', (request, response, next) => {
  * @apiName GetContactRequest
  * @apiGroup Contacts/Requests
  * 
+ * @apiDescription Responds with a list of contact requests that have 
+                   been sent to the account that corresponds to the request sender.
+ * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
  * @apiSuccess (Success 201) {boolean} success 
@@ -263,6 +269,10 @@ router.get('/', (request, response, next) => {
  * @api {put} /contacts/requests Request to accept or reject a contact request
  * @apiName PutContactRequest
  * @apiGroup Contacts/Requests
+ * 
+ * @apiDescription Provides support for accepting or rejecting 
+                   an existing contact request that was sent to the 
+                   account corresponding to the request sender.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam {String} memberID 
@@ -375,10 +385,6 @@ router.put('/', (request, response, next) => {
                 });
             });   
 });
-
-
-
-
 
 
 module.exports = router;
