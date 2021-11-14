@@ -233,7 +233,7 @@ router.get('/', (request, response, next) => {
             for (let i = 0; i < result.rowCount; i++) {
                 resultRows[i] = result.rows[i].memberid_a;
             }
-            request.body.requestIDs = resultRows;
+            request.body.memberIDs = resultRows;
             next();
     
         })
@@ -248,7 +248,7 @@ router.get('/', (request, response, next) => {
 },  (request, response, next) => {
     // get the information about each user and add it to the request
 
-    let memberIDs = request.body.requestIDs;
+    let memberIDs = request.body.memberIDs;
 
     // if there aren't any contact requests, skip trying to extract data
     // and move onto next function

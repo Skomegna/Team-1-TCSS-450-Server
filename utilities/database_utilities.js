@@ -169,6 +169,90 @@ function addMemberID(request, response, next) {
         });  
 }
 
+/**
+ * Add a list of contact information objects at request.body.contactInfoList
+ * that includes information about each member ID stored 
+ * in request.body.memberIDs.
+ * 
+ * request.body.contactInfoList will contain an array of objects like:
+ * [
+ *     {
+ *         "memberid":"42",
+ *         "first":"Charles",
+ *         "last":"Bryan",
+ *         "nickname": "Big C"
+ *      }, 
+ *      {
+ *         "memberid":"167",
+ *         "first":"Austn",
+ *         "last":"Attaway",
+ *         "nickname": "AustnSauce"
+ *       }
+ *  ]
+ * 
+ * 
+ * Can potentially send a 400 error
+ * { 
+ *      message: "SQL Error",
+ *      detail: err.detail
+ * }
+ */ 
+function getContactInfo(request, response, next) {
+
+    let memberIDs = request.body.memberIDs;
+
+    // if there aren't IDs, set request.body.contactInfoList 
+    // to an empty array and move on.
+    // and move onto next function
+    if (memberIDs.length == 0) {
+        request.body.contactInfoList = [];
+        next();
+    }
+
+    let query = "SELECT (memberID, FirstName, LastName, Nickname) "
+            + "FROM Members WHERE ";
+    for (let i = 0; i < memberIDs.length; i++) {
+        query += "memberID=" + memberIDs[i] + " OR ";
+    }
+    query = query.substring(0, query.length - 3);
+
+    pool.query(query)
+        .then(result => {
+            // now that we have the raw data, format it
+            let rawData = result.rows;
+            const resultArr = [];
+
+            for (let i = 0; i < rawData.length; i++) {
+                let rowString = rawData[i].row;
+                rowString = rowString.substring(1, rowString.length - 1);
+                let arr = rowString.split(',');
+                
+                let resultObj = {
+                    "memberid": arr[0],
+                    "first": arr[1],
+                    "last": arr[2],
+                    "nickname": arr[3]
+                };
+                resultArr[i] = resultObj;
+            }
+
+            request.body.contactInfoList = resultArr;
+            next();
+        })
+        .catch(err => {
+            // an sql error occurred 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        });
+}
+
+
 module.exports = {
-    checkNickname, checkNicknameExists, checkMemberIDExists, addMemberID
+    checkNickname, 
+    checkNicknameExists, 
+    checkMemberIDExists, 
+    addMemberID, 
+    getContactInfo
 };

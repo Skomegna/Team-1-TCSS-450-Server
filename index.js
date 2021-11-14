@@ -36,7 +36,7 @@ app.use('/messages', middleware.checkToken, require('./routes/messages.js'));
 
 app.use('/chats', middleware.checkToken, require('./routes/chats.js'));
 
-//app.use('/contacts', middleware.checkToken, require('.routes/contacts.js'));
+app.use('/contacts', middleware.checkToken, require('./routes/contacts.js'));
 
 app.use('/contacts/requests', middleware.checkToken, require('./routes/contact_requests.js'));
 
