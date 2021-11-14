@@ -20,6 +20,7 @@ const validation = require('../utilities').validation;
 const databaseUtils = require('../utilities/exports').database;
 const checkNicknameExists = databaseUtils.checkNicknameExists;
 const checkMemberIDExists = databaseUtils.checkMemberIDExists;
+const getContactInfo = databaseUtils.getContactInfo;
 const addMemberID = databaseUtils.addMemberID;
 
 // validation tools
@@ -245,63 +246,12 @@ router.get('/', (request, response, next) => {
             });
         });
 
-},  (request, response, next) => {
-    // get the information about each user and add it to the request
-
-    let memberIDs = request.body.memberIDs;
-
-    // if there aren't any contact requests, skip trying to extract data
-    // and move onto next function
-    if (memberIDs.length == 0) {
-        next();
-    }
-
-    let query = "SELECT (memberID, FirstName, LastName, Nickname) "
-            + "FROM Members WHERE ";
-    for (let i = 0; i < memberIDs.length; i++) {
-        query += "memberID=" + memberIDs[i] + " OR ";
-    }
-    query = query.substring(0, query.length - 3);
-    pool.query(query)
-        .then(result => {
-            request.body.dataRows = result.rows;
-            next();
-        })
-        .catch(err => {
-            // an sql error occurred 
-            response.status(400).send({
-                message: "SQL Error",
-                error: err
-            });
-        });
-
-}, (request, response) => {
-    // now we have the data we want to send to the 
-    // user stored at request.body.dataRows, so parse it
-    // into more readable data and send it.
-    
-    const resultArr = [];
-    // format resultArr only if we have data to format
-    if (request.body.requestIDs.length != 0) {
-        const data = request.body.dataRows;
-
-        for (let i = 0; i < data.length; i++) {
-            let rowString = data[i].row;
-            rowString = rowString.substring(1, rowString.length - 1);
-            let arr = rowString.split(',');
-            let resultObj = {
-                "memberid": arr[0],
-                "first": arr[1],
-                "last": arr[2],
-                "nickname": arr[3]
-            };
-            resultArr[i] = resultObj;
-        }
-    }
-
+}, getContactInfo, (request, response) => {
+    // getContactInfo will put the response 
+    // data at request.body.contactInfoList
     response.status(201).send({
         success: true,
-        data: resultArr
+        data: request.body.contactInfoList
     });
 });
 
