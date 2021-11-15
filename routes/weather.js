@@ -8,6 +8,15 @@
  *        - daily weather
  *        - hourly weather
  */
+
+//import fetch from "node-fetch";
+//globalThis.fetch = fetch;
+
+const fetch = require('node-fetch');
+// import fetch from 'cross-fetch';
+
+//var fetch = require("node-fetch");
+
 const express = require('express');
 //const pool = require('../utilities/sql_conn.js');
 const router = express.Router();
@@ -32,10 +41,10 @@ router.get("/:zip?", (request, response, next) => {
           response.status(400).send({
               message: "Malformed parameter. Zip Code must be a number"
           })
-      } else if (request.params.zip < 5 || request.params.zip > 5) {
-        response.status(400).send({
-            message: "Malformed parameter. Zip Code must be a five digits"
-        })
+      }  else if (request.params.zip < 5 ) { // || request.params.zip > 5
+          response.status(400).send({
+              message: "Malformed parameter. Zip Code must be a five digits"
+          })
       } else {
           next()
       }
@@ -64,9 +73,9 @@ router.get("/:zip?", (request, response, next) => {
    const apiUrl = userLocation(url, lat, long, current, apiKey);
 	
       fetch(apiUrl)
-        .then(res => res.json())
+        .then(response => response.json())
         .then(data => {
-            res.send({ data });
+            response.send({ data });
         }).catch(error => {
           response.status(400).send({
               message: "API Error",
