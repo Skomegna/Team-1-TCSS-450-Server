@@ -9,16 +9,9 @@
  *        - hourly weather
  */
 
-//import fetch from "node-fetch";
-//globalThis.fetch = fetch;
-
 const fetch = require('node-fetch');
-// import fetch from 'cross-fetch';
-
-//var fetch = require("node-fetch");
 
 const express = require('express');
-//const pool = require('../utilities/sql_conn.js');
 const router = express.Router();
 
 const validation = require('../utilities').validation;
@@ -50,52 +43,36 @@ router.get("/:zip?", (request, response, next) => {
       }
   }, (request, response) => {
 
-
-      //let apiKey = '243523a13ab5e84d60202e8553eba71b';
-      // let city = 'tacoma';
       let zip = request.params.zip;
       let url = 'https://api.openweathermap.org/data/2.5/onecall?';
       let lat = 'lat=47.245059&';
       let long = 'lon=-122.438933';
       let current = '&exclude=alerts,hourly,minutely,daily';
       let apiKey = '&units=imperial&appid=243523a13ab5e84d60202e8553eba71b';
-
-      //build api URL with user zip
-      //const baseUrl = 'http://api.openweathermap.org/data/2.5/weather?zip=';
-      //ENTER YOUR API KEY HERE (make sure to no include < >)
-      //const apiId = '&appid=<YOUR API KEY GOES HERE>&units=imperial';
       
       const userLocation = (theUrl, thelat, theLong, theCurrent, theApiKey) => {
           let newUrl = theUrl + thelat + theLong + theCurrent + theApiKey;
           return newUrl;
       };	
 	
-   const apiUrl = userLocation(url, lat, long, current, apiKey);
-	
-      fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            response.send({ data });
-        }).catch(error => {
-          response.status(400).send({
-              message: "API Error",
-              error: error
-          })
-      })
-//}, (request, response) => {
+      const apiUrl = userLocation(url, lat, long, current, apiKey);
 
+
+      fetch(apiUrl, {
+        method: 'POST',
+        body: 'a=1'
+      }) 
+            .then(response => response.json())
+            .then(data => {
+                response.send({ data });
+            }).catch(error => {
+              response.status(400).send({
+                  message: "API Error",
+                  error: error
+              })
+            })
 
 });
-
-// request(url, function (err, response, body) {
-//     if(err){
-//       console.log('error:', error);
-//     } else {
-//       let weather = JSON.parse(body)
-//       let message = `It's ${weather.main.temp} degrees in ${weather.name}!`;
-//       console.log(message);
-//     }
-// });
 
 
 module.exports = router;
