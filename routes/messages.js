@@ -1,4 +1,9 @@
-//express is the framework we're going to use to handle requests
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
+// used to handle requests
 const express = require('express');
 
 //Access the connection to Heroku Database

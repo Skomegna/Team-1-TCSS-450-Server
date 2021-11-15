@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 const Pushy = require('pushy');
 
 // Plug in your Secret API Key 

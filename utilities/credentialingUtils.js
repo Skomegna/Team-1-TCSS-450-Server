@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 //We use this create the SHA256 hash
 const crypto = require("crypto");
 
