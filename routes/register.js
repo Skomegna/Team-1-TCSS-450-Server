@@ -33,6 +33,10 @@ const router = express.Router();
  * @apiName PostAuth
  * @apiGroup Auth
  * 
+ * @apiDescription Request to register a new user for the app, 
+                   requiring a first name, last name, unique nickname,
+                   unique email, and password.    
+ * 
  * @apiParam {String} first a users first name
  * @apiParam {String} last a users last name
  * @apiParam {String} email a users email *unique
@@ -50,6 +54,13 @@ const router = express.Router();
  * 
  * @apiSuccess (Success 201) {boolean} success true when the name is inserted
  * @apiSuccess (Success 201) {String} email the email of the user inserted 
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "success": true,
+ *       "email": "cfb3@fake.email"
+ *     }
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 

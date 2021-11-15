@@ -29,6 +29,8 @@ const pool = require('../utilities/exports').pool;
                    request sender is a member of. Each chat object contains 
                    the name of the chat and the unique ID of the chat.
  * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ * 
  * @apiSuccess {boolean} succes true when the list of chats is created
  * @apiSuccess {Array} data the array of objects that each
                contain a chatID and name
@@ -38,7 +40,7 @@ const pool = require('../utilities/exports').pool;
  *      "success":true,
  *      "data":[
  *          {
- *              "chatid":"1",
+ *              "chatId":"1",
  *              "name":"Global Chat"
  *          }, 
  *          {
@@ -88,7 +90,7 @@ router.get('/', (request, response, next) => {
                 let rowArr = rowString.split(',');
 
                 resultArr[i] = {
-                    chatid: rowArr[0].substring(1),
+                    chatId: rowArr[0].substring(1),
                     name: rowArr[1].substring(1, rowArr[1].length - 2)
                 };
             }

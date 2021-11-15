@@ -23,6 +23,9 @@ const router = express.Router();
  * @apiName ResendCodeAuth
  * @apiGroup Auth/ResendCode
  * 
+ * @apiDescription Creates a new account verification code corresponding 
+                   to the given email and sends that code to the specified email.
+ * 
  * @apiParam {String} email a users email *unique
  * 
  * @apiParamExample {json} Request-Body-Example:
