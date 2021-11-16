@@ -53,6 +53,12 @@ let isStringProvided = validation.isStringProvided;
  * @apiParam  {String} nickname 
         the nickname of the account the contact request is for
  *
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "nickname": "theNickname"
+ *     }
+
+ *
  * @apiSuccess (Success 201) {boolean} success 
         true when the contact request has been created
  * 
@@ -279,6 +285,15 @@ router.get('/', (request, response, next) => {
         the memberID of the account you are accepting or rejecting
  * @apiParam {Boolean} isAccepting
         true if the request sender is accepting the request, false if rejecting
+
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "memberID": "2343",
+ *         "isAccepting": true
+ *     }
+ * 
+ * @apiSuccess (Success 200) {boolean} success 
+        true when the contact request has been accepted or rejected
  *
  * @apiError (400: Missing Parameters) {String} message 
         "Missing required information"
@@ -374,7 +389,7 @@ router.put('/', (request, response, next) => {
     pool.query(query, values)
             .then(result => {
                 // everything was deleted successfully, so response success
-                response.status(400).send({
+                response.status(200).send({
                     success: true
                 });
             })
