@@ -1,4 +1,9 @@
 /*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
+/*
  * Visit these links for more information on nodemailer
  * https://nodemailer.com/about/
  * https://www.w3schools.com/nodejs/nodejs_email.asp 
@@ -17,8 +22,10 @@ const EMAIL_PASS = process.env.BURNER_EMAIL_PASS;
 const EMAIL = 'tcss450.1.no.reply@gmail.com';
 
 
-// sends an email to the given recieverEmail with the
-// given subject name and message.
+/*
+ * Sends an email to the given recieverEmail with the
+ * given subject name and message.
+ */
 const sendEmail = (receiverEmail, subject, message) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',

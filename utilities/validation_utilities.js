@@ -1,3 +1,8 @@
+/*
+ * TCSS450 Mobile Applications
+ * Fall 2021
+ */
+
 const express = require('express');
 const pool = require('./sql_conn.js');
 const router = express.Router();
@@ -22,41 +27,7 @@ let isStringProvided = (param) =>
 function createCode() {
     let myNumber = (Math.floor(Math.random() * 900000) + 100000);
     return myNumber;
-}
-
-
-/**
- * Checks if the nickname located at request.body.nickname 
- * exists within the database Members table. 
- * 
- * If the username does not exist, call next.
- * If the username exists, send a 400 error { message: "Username exists" }
- */
-function checkNickname(request, response, next) {
-    const nickname = request.body.nickname;
-    let theValues = [nickname];
-    let theQuery = "SELECT Nickname FROM Members WHERE Nickname=$1";
-    pool.query(theQuery, theValues)
-        .then(result => {
-            // query didn't find a nickname so the result array is empty
-            if (result.rowCount == 0) {
-                next();
-            } else {
-                response.status(400).send({
-                    message: "Username exists"
-                });
-            }
-        })
-        .catch((err) => {
-            //log the error
-            console.log(err.stack);
-            response.status(400).send({
-                message: "Other error, see detail",
-                detail: err.detail
-            });
-        });
-}
-
+};
 
 /**
  * Deletes the row in the VerificationCode table corresponding
@@ -81,9 +52,9 @@ function deleteVerificationCodeRow(request, response, next) {
                 message: "Other error, see detail",
                 detail: err.detail
             });
-        })
+        });
 
-}
+};
 
 // create code, adds to to request
 // add code to database
@@ -116,7 +87,6 @@ function createAndStoreCode(request, response, next) {
 module.exports = {
     createCode,
     isStringProvided,
-    checkNickname,
     deleteVerificationCodeRow,
     createAndStoreCode
 };
