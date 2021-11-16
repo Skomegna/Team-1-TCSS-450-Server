@@ -28,32 +28,18 @@ const url = 'https://api.openweathermap.org/data/2.5/onecall?';
 const apiKey = '&exclude=alerts,minutely&units=imperial&appid=243523a13ab5e84d60202e8553eba71b';
 
 /**
- * request should be in form:
- * /:zip
- */
-/**
- * @api {get} /messages/:chatId?/:messageId? Request to get chat messages 
- * @apiName GetMessages
- * @apiGroup Messages
+ * @api {get} /weather/:zip? Request to get weather data 
+ * @apiName GetWeather
+ * @apiGroup Weather
  * 
- * @apiDescription Request to get the 10 most recent chat messages
- * from the server in a given chat - chatId. If an optional messageId is provided,
- * return the 10 messages in the chat prior to (and not including) the message containing
- * MessageID.
+ * @apiDescription Request to get current weather information for current, daily,
+ * and hourly weather.
  * 
- * @apiParam {Number} chatId the chat to look up. 
- * @apiParam {Number} messageId (Optional) return the 15 messages prior to this message
+ * @apiParam {Number} zip code to look up. 
  * 
- * @apiSuccess {Number} rowCount the number of messages returned
- * @apiSuccess {Object[]} messages List of massages in the message table
- * @apiSuccess {String} messages.messageId The id for this message
- * @apiSuccess {String} messages.email The email of the user who posted this message
- * @apiSuccess {String} messages.message The message text
- * @apiSuccess {String} messages.timestamp The timestamp of when this message was posted
- * 
- * @apiError (404: Missing required information) {String} message "Chat ID Not Found"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (404: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a number" 
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a five digits"
  * 
  * @apiUse JSONError
  */
