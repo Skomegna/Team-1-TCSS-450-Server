@@ -27,6 +27,10 @@ const config = {
  * @apiName GetAuth
  * @apiGroup Auth
  * 
+ * @apiDescription Request to sign in an existing user in to the service. 
+                   Requires an email and password and will respond with
+                   a valid JWT that proves they have logged in.
+ * 
  * @apiHeader {String} authorization "username:password" uses Basic Auth 
  * 
  * @apiSuccess {boolean} success true when the name is found and password matches
@@ -34,7 +38,7 @@ const config = {
  * @apiSuccess {String} token JSON Web Token
  * 
  *  * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 OK
+ *     HTTP/1.1 200 OK
  *     {
  *       "success": true,
  *       "message": "Authentication successful!",

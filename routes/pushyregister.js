@@ -18,8 +18,17 @@ const middleware = require('../middleware/exports');
  * @apiName PutAuth
  * @apiGroup Auth
  * 
+ * @apiDescription Inserts a Pushy token into the valid pushy tokens 
+                   database that corresponds to the device
+                   and account that sent this request.
+ * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam {String} token the Pushy Token of the user identified in the JWT
+ * 
+ * @apiParamExample {json} Request-Body-Example:
+ *  {
+ *      "token":"ThisIsTheToken"
+ *  }
  * 
  * @apiSuccess {boolean} success true when the pushy token is inserted
  * 
@@ -97,6 +106,10 @@ router.put('/', middleware.checkToken, (request, response, next) => {
  * @apiName DeleteAuth
  * @apiGroup Auth
  * 
+ * @apiDescription Deletes the Pushy token in the valid pushy tokens 
+                   database that corresponds to the device
+                   and account that sent this request.
+ *
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
  * @apiSuccess {boolean} success true when the pushy token is deleted
