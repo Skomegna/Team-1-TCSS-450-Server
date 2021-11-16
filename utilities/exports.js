@@ -14,11 +14,13 @@ const generateSalt = credUtils.generateSalt;
 //validation tools
 const validation = require('./validation_utilities.js');
 
+const weatherChecker = require('./weatherHelper.js');
+
 // database tools
 const database = require('./database_utilities.js');
 
 const sendEmail = require('./email.js').sendEmail;
 
 module.exports = { 
-    pool, generateHash, generateSalt, validation, database, sendEmail
+    pool, generateHash, generateSalt, validation, database, sendEmail, weatherChecker
 };
