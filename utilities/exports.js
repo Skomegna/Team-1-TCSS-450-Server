@@ -9,8 +9,10 @@ const generateSalt = credUtils.generateSalt;
 //validation tools
 const validation = require('./validation_utilities.js');
 
+const weatherChecker = require('./weatherHelper.js');
+
 const sendEmail = require('./email.js').sendEmail;
 
 module.exports = { 
-    pool, generateHash, generateSalt, validation, sendEmail
+    pool, generateHash, generateSalt, validation, sendEmail, weatherChecker
 };
