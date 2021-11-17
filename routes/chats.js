@@ -24,6 +24,8 @@ let isStringProvided = validation.isStringProvided;
  * @apiName PostChats
  * @apiGroup Chats
  * 
+ * @apiDescription Request to create a new chat with the given name
+ * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam {String} name the name for the chat
  * 
@@ -194,9 +196,14 @@ console.log(request.decoded);
  * @apiName GetChats
  * @apiGroup Chats
  * 
+ * @apiDescription Request to return all of the emails that correspond
+                   to the accounts present in the chat corresponding
+                   to the given chatId. 
+ * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
  * @apiParam {Number} chatId the chat to look up. 
+
  * 
  * @apiSuccess {Number} rowCount the number of messages returned
  * @apiSuccess {Object[]} members List of members in the chat

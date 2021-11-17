@@ -46,6 +46,25 @@ let isStringProvided = validation.isStringProvided;
  * @apiSuccess {boolean} success true when the list is created and sent
  * @apiSuccess {Array} data the array of contact data objects
  * 
+ * @apiSuccessExample {json} Response-Success-Example:
+ *  {
+ *      "success":true,
+ *      "data":[
+ *          {
+ *              "memberid":"42",
+ *              "first":"Charles",
+ *              "last":"Bryan",
+ *              "nickname": "Big C"
+ *          }, 
+ *          {
+ *              "memberid":"167",
+ *              "first":"Austn",
+ *              "last":"Attaway",
+ *              "nickname": "AustnSauce"
+ *          }
+ *      ]
+ *  }
+ * 
  * @apiUse SQLError
  * 
  * @apiUse JSONError
@@ -124,34 +143,41 @@ router.get('/', (request, response, next) => {
  *
  * @apiParam {Number} contactID the memberID of the contact to be deleted
  * 
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "contactId": 2343,
+ *     }
+ * 
+ * @apiSuccess {boolean} success true when the list is created and sent 
+ * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
  *
  * @apiUse SQLError
  */
- router.delete('/:contactID/', (request, response, next) => {
-    // ensure the contactID is given and is a number
-    if (!request.params.contactID) {
+ router.delete('/:contactId/', (request, response, next) => {
+    // ensure the contactId is given and is a number
+    if (!request.params.contactId) {
         response.status(400).send({
             message: "Missing required information"
         });
-    } else if (isNaN(request.params.contactID)){
+    } else if (isNaN(request.params.contactId)){
         response.status(400).send({
-            message: "Malformed parameter. contactID must be a number"
+            message: "Malformed parameter. contactId must be a number"
         });
     } else {
         next();
     }
 
  }, (request, response) => {
-    // no need to check if the contactID is valid. Just go through the 
+    // no need to check if the contactId is valid. Just go through the 
     // database and delete if if we see it. 
 
     let query = `DELETE FROM Contacts 
                  WHERE (MemberID_A=$1 AND MemberID_B=$2)
                  OR (MemberID_A=$2 AND MemberID_B=$1)`;
-    let values = [request.params.contactID, request.decoded.memberid];
+    let values = [request.params.contactId, request.decoded.memberid];
 
     pool.query(query, values)
         .then(result => {

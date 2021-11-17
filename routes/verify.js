@@ -18,23 +18,31 @@ const deleteVerificationCodeRow = require('../utilities').validation.deleteVerif
 let isStringProvided = validation.isStringProvided;
 
 /**
- * @api {post} /verify Verify an account using a code
+ * @api {post} auth/verify Verify an account using a code
  * @apiName PostVerify
  * @apiGroup Auth/Verify
  * 
- * @apiParam {String} email Account email
+ * @apiDescription Accepts a 6 digit verification code that can be 
+                   used to verify the account that corresponds to the given email.
  * 
+ * @apiParam {String} email Account email
  * @apiParam {Int} code 6 Digit Verification Code 
  * 
- * * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 OK
+ * @apiParamExample {json} Request-Body-Example:
  *     {
- *       "success": true,
- *       "message": "Thank you for verifying",
+ *         "email": "theEmail@email.com",
+ *         "code": 167530
  *     }
  * 
  * @apiSuccess {boolean} success true when the codes match.
  * @apiSuccess {String} message "Thank you for verifying"
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "success": true,
+ *         "message": "Thank you for verifying",
+ *     }
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
