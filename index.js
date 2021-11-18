@@ -30,7 +30,7 @@ app.use('/auth/verify', require('./routes/verify.js'));
 
 app.use('/auth/resendcode', require('./routes/resend_code.js'));
 
-app.use('/weather', require('./routes/weather.js'));
+app.use('/weather', middleware.checkToken, require('./routes/weather.js'));
 
 app.use('/auth', middleware.checkToken, require('./routes/pushyregister.js'));
 

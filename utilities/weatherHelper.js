@@ -3,56 +3,6 @@
  * Fall 2021
  */
 
-const express = require('express');
-const pool = require('./sql_conn.js');
-const router = express.Router();
-
-/**
- * Translate UNIX timestamp to the human readable date and time.
- * 
- * @param {number} UNIX_timestamp the number to translate
- * @returns an odject with date and time.
- */
-function timeConverter(UNIX_timestamp){
-    var a = new Date(UNIX_timestamp * 1000);
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var year = a.getFullYear();
-    var month = months[a.getMonth()];
-    var day = days[a.getDay()];
-    var date = a.getDate();
-    var hour = a.getHours();
-    var min = a.getMinutes();
-    var sec = a.getSeconds();
-    var time = day + ' ' + date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-    return time;
-  }
-
-/**
- * Translate UNIX timestamp to the human readable hour
- * 
- * @param {number} UNIX_timestamp the number to translate
- * @returns an odject with a hour.
- */
-  function hoursConverter(UNIX_timestamp){
-    var a = new Date(UNIX_timestamp * 1000);
-    var hour = a.getHours();
-    // var time = day + ' ' + date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-    return hour;
-  }
-
-/**
- * Translate UNIX timestamp to the human readable day of the week.
- * 
- * @param {number} UNIX_timestamp the number to translate
- * @returns an odject with a day abbreviation.
- */
-  function daysConverter(UNIX_timestamp){
-    var a = new Date(UNIX_timestamp * 1000);
-    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var day = days[a.getDay()];
-    return day;
-  }
 
 /**
  * This function takes data from a request, parses through it, and returns
@@ -62,13 +12,13 @@ function timeConverter(UNIX_timestamp){
  * If the body of the request is undefined, it throws an error message.
  */
 function createCurrentWeather(request, response, next) {
-    
+    let timeZO = request.body.data.timezone_offset;
     if (request.body.data === undefined) {
         response.status(400).send({
             message: "No current weather data"
         });
     } else {
-
+        
         // retrieves data from the request body
         const tempVal = Math.round(request.body.data.current.temp);
         const humidityVal = Math.round(request.body.data.current.humidity);
@@ -84,12 +34,13 @@ function createCurrentWeather(request, response, next) {
             curRain: chance_rainVal,
             ccurIcon: iconVal
         };
+        request.body.timeZoneOffset = timeZO;
         next();
     }
 }
 
 /**
- * This function takes data from a request, parses through it, and returns
+ * This function takes a date from a request, parses through it, and returns
  * an array with hours, temperatures, and icon for hourly weather
  * and pass it as a response hourlyDate.
  */
@@ -100,10 +51,13 @@ function createHourlyWeather(request, response, next) {
     let hVal;
     let tempVal;
     let iconVal;
+    let humadDate = new Date(request.body.humanTime);
+
+    hVal =  humadDate.getHours();
 
     // makes an object with needed data for hourly weather
-    for (let i = 0; i < 12; i++) {
-        hVal = hoursConverter(request.body.data.hourly[i].dt);
+    for (let i = 0; i < 24; i++) {
+        
         tempVal = Math.round(request.body.data.hourly[i].temp);
         iconVal = request.body.data.hourly[i].weather[0].icon;
 
@@ -112,6 +66,8 @@ function createHourlyWeather(request, response, next) {
             hTemp: tempVal,
             hIcon: iconVal
         };
+
+        hVal = (hVal + 1) % 24;
     }
 
     // assign the json object to request.body.hourlyData
@@ -128,18 +84,23 @@ function createDailyWeather(request, response, next) {
 
     // retrieves data from the request body
     let days = [];
-    let dVal;
-    let tempVal;
-    let iconVal;
-
+    let theHumanDate = request.body.humanTime; // "2021-11-18 50:00:00"
+    
+    let dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    let dateObj = new Date(theHumanDate.split(" ")[0]);
+    let dayIndex = dateObj.getDay();
+    
     // makes an object with needed data for daily weather
     for (let i = 0; i < 7; i++) {
-        dVal = daysConverter(request.body.data.daily[i].dt);
-        tempVal = Math.round(request.body.data.daily[i].temp.day);
-        iconVal = request.body.data.daily[i].weather[0].icon;
+       
+        let dayName = dayNames[dayIndex];
+        let tempVal = Math.round(request.body.data.daily[i].temp.day);
+        let iconVal = request.body.data.daily[i].weather[0].icon;
+
+        dayIndex = (dayIndex + 1) % 7;
 
         days[i] = {
-            dDay: dVal, 
+            dDay: dayName, 
             dTemp: tempVal,
             dIcon: iconVal
         };
