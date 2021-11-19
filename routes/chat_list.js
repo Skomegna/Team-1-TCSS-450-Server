@@ -56,13 +56,9 @@ router.get('/', (request, response, next) => {
     // we know that jwt is given, so get database data
     let query = `SELECT chatid FROM ChatMembers WHERE MemberID=$1`;
     let values = [request.decoded.memberid];
-console.log(request.decoded);
-console.log("MemberID: " + request.decoded.memberid);
 
     pool.query(query, values)
         .then(result => {
-console.log("Printing rows:");
-console.log(result.rows);
             request.body.chatIDs = result.rows;
             next();
         })
