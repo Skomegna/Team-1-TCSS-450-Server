@@ -23,7 +23,7 @@ function createCurrentWeather(request, response, next) {
         const tempVal = Math.round(request.body.data.current.temp);
         const humidityVal = Math.round(request.body.data.current.humidity);
         const feels_likeVal = Math.round(request.body.data.current.feels_like);
-        const chance_rainVal = Math.round(request.body.data.hourly[0].pop);
+        const chance_rainVal = request.body.data.hourly[0].pop;
         const iconVal = request.body.data.current.weather[0].icon;
 
         // assign the json object to request.body.currentData
@@ -51,7 +51,7 @@ function createHourlyWeather(request, response, next) {
     let hVal;
     let tempVal;
     let iconVal;
-    let humadDate = new Date(request.body.humanTime);
+    let humadDate = new Date(request.body.adjHumanTime);
 
     hVal =  humadDate.getHours();
 
@@ -86,10 +86,10 @@ function createDailyWeather(request, response, next) {
     let days = [];
     let theHumanDate = request.body.humanTime; // "2021-11-18 50:00:00"
     
-    let dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    let dateObj = new Date(theHumanDate.split(" ")[0]);
-    let dayIndex = dateObj.getDay();
-    
+    let dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let dateObj = new Date(theHumanDate);
+    let dayIndex = dateObj.getDay(); 
+
     // makes an object with needed data for daily weather
     for (let i = 0; i < 7; i++) {
        
