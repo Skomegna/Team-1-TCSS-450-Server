@@ -23,7 +23,7 @@ function createCurrentWeather(request, response, next) {
         const tempVal = Math.round(request.body.data.current.temp);
         const humidityVal = Math.round(request.body.data.current.humidity);
         const feels_likeVal = Math.round(request.body.data.current.feels_like);
-        const chance_rainVal = Math.round(request.body.data.hourly[0].pop);
+        const chance_rainVal = request.body.data.hourly[0].pop;
         const iconVal = request.body.data.current.weather[0].icon;
 
         // assign the json object to request.body.currentData
