@@ -71,41 +71,54 @@ router.get('/', (request, response, next) => {
 }, (request, response) => {
     // create a list of chatIDs and Chat names based on the 
     // chatIDs at requests.body.chatIDs
-
-    let query = "SELECT (chatid, name) FROM Chats WHERE ";
-    for (let i = 0; i < request.body.chatIDs.length; i++) {
-        query += "ChatID=" + request.body.chatIDs[i].chatid + "OR ";
+    
+    
+    if (request.body.chatIDs.length == 0) {
+        // send an empty data array if we don't have any chat IDs to send
+        response.status(201).send({
+            success: true,
+            data: []
+        });
+    } else {
+        // get the chatID and the name from the list 
+        // of chatIDs and send it 
+        let query = "SELECT (chatid, name) FROM Chats WHERE ";
+        for (let i = 0; i < request.body.chatIDs.length; i++) {
+            query += "ChatID=" + request.body.chatIDs[i].chatid + " OR ";
+        }
+        query = query.substring(0, query.length - 3) + ";";
+        console.log(query);
+    
+        pool.query(query)
+            .then(result => {
+                
+                // format the data (see documentation for format)
+                let resultArr = new Array(result.rowCount);
+                
+                for (let i = 0; i < resultArr.length; i++) {
+                    let rowString = result.rows[i].row;
+                    let rowArr = rowString.split(',');
+    
+                    resultArr[i] = {
+                        chatId: rowArr[0].substring(1),
+                        name: rowArr[1].substring(1, rowArr[1].length - 2)
+                    };
+                }
+    
+                response.status(201).send({
+                    success: true,
+                    data: resultArr
+                });
+            })
+            .catch(error => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error
+                });
+            }) 
     }
-    query = query.substring(0, query.length - 3) + ";";
-    console.log(query);
 
-    pool.query(query)
-        .then(result => {
-            
-            // format the data (see documentation for format)
-            let resultArr = new Array(result.rowCount);
-            
-            for (let i = 0; i < resultArr.length; i++) {
-                let rowString = result.rows[i].row;
-                let rowArr = rowString.split(',');
-
-                resultArr[i] = {
-                    chatId: rowArr[0].substring(1),
-                    name: rowArr[1].substring(1, rowArr[1].length - 2)
-                };
-            }
-
-            response.status(201).send({
-                success: true,
-                data: resultArr
-            });
-        })
-        .catch(error => {
-            response.status(400).send({
-                message: "SQL Error",
-                error: error
-            });
-        }) 
+    
 });
 
 module.exports = router;
