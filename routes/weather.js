@@ -142,8 +142,33 @@ router.get("/:zip?", (request, response, next) => {
               })
             })
 }, (request, response, next) => {
-    let timeStemp = request.body.data.hourly[0].dt
+    let adjustedTimeStemp = request.body.data.hourly[0].dt
         + (request.body.data.timezone_offset);
+
+        //compose the timestamp URL with offset
+        let url = humanDateAPI + adjustedTimeStemp;
+    
+        // fetch a timestamp to human time API to receive a human-readable date.
+        fetch(url, {
+            method: 'GET'
+          })  
+            .then(response => response.json())
+            .then(data => {
+                // assign the date to request.body.humanTime
+                request.body.adjHumanTime = data.Datetime;
+                
+                next();
+            }).catch(error => {
+                console.log("error!");
+                console.log(error);
+                response.status(400).send({
+                    message: "Human Data API Error",
+                    error: error
+                })
+            });
+
+}, (request, response, next) => {
+    let timeStemp = request.body.data.hourly[0].dt;
 
         //compose the timestamp URL with offset
         let url = humanDateAPI + timeStemp;
