@@ -19,6 +19,7 @@ const weatherChecker = require('../utilities').weatherChecker;
 let createCurrentWeather = weatherChecker.createCurrentWeather;
 let createHourlyWeather = weatherChecker.createHourlyWeather;
 let createDailyWeather = weatherChecker.createDailyWeather;
+let dtToHumanDate = weatherChecker.dtToHumanDate;
 
 // constants to create API's URL to retrieve weather data
 const url = 'https://api.openweathermap.org/data/2.5/onecall?lat=';
@@ -88,7 +89,6 @@ const apiKey = process.env.weather_API;
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a number" 
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a five digits"
  * 
- * @apiError (400: Invalid Response) {String} message "Malformed parameter. Human Data API Error"
  * 
  * @apiUse JSONError
  */
@@ -113,7 +113,7 @@ router.get("/:zip?", (request, response, next) => {
 
       // There should be code for implementation zip code to latitude/longitude conversion
       let zip = request.params.zip;
-      let lat = '47.245059&';   // '35.6762'; - Tokyo   ;   lat=47.245059&'  - Tacoma
+      let lat = '47.245059';   // '35.6762'; - Tokyo   ;   lat=47.245059&'  - Tacoma
       let long = '-122.438933'; // '139.6503' - Tokyo   ;   lon=-122.438933' - Tacoma
       
       const userLocation = (theUrl, thelat, theMiddleUrl1, theLong, theMiddleUrl2, theApiKey) => {
@@ -141,58 +141,7 @@ router.get("/:zip?", (request, response, next) => {
                 error: error
               })
             })
-}, (request, response, next) => {
-    let adjustedTimeStemp = request.body.data.hourly[0].dt
-        + (request.body.data.timezone_offset);
-
-        //compose the timestamp URL with offset
-        let url = humanDateAPI + adjustedTimeStemp;
-    
-        // fetch a timestamp to human time API to receive a human-readable date.
-        fetch(url, {
-            method: 'GET'
-          })  
-            .then(response => response.json())
-            .then(data => {
-                // assign the date to request.body.humanTime
-                request.body.adjHumanTime = data.Datetime;
-                
-                next();
-            }).catch(error => {
-                console.log("error!");
-                console.log(error);
-                response.status(400).send({
-                    message: "Human Data API Error",
-                    error: error
-                })
-            });
-
-}, (request, response, next) => {
-    let timeStemp = request.body.data.hourly[0].dt;
-
-        //compose the timestamp URL with offset
-        let url = humanDateAPI + timeStemp;
-    
-        // fetch a timestamp to human time API to receive a human-readable date.
-        fetch(url, {
-            method: 'GET'
-          })  
-            .then(response => response.json())
-            .then(data => {
-                // assign the date to request.body.humanTime
-                request.body.humanTime = data.Datetime;
-                
-                next();
-            }).catch(error => {
-                console.log("error!");
-                console.log(error);
-                response.status(400).send({
-                    message: "Human Data API Error",
-                    error: error
-                })
-            });
-
-}, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
+}, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
 
     // returns needed weather data as three objects:
     //    request.body.currentData,
