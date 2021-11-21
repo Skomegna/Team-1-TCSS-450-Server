@@ -31,11 +31,14 @@ let isStringProvided = validation.isStringProvided;
  * @apiParam {Array} memberIds the array of memberIds to add to the chat
                                (do not include the request sender id, 
                                that is implied)
+ * @apiParam {String} firstMessage the first message sent in the 
+                                   chat by the user who created this chat
  * 
  * @apiParamExample {json} Request-Body-Example:
  *     {
  *         "name": "Austn, Parker, Steve, Alex, and Chris",
- *         "memberIds": [542, 543, 544, 545];
+ *         "memberIds": [542, 543, 544, 545],
+ *         "firstMessage": "The first message sent!"
  *     }
  * 
  * @apiSuccess (Success 201) {boolean} success true when the name is inserted
@@ -47,6 +50,8 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apiError (400: Member Insertion Error) {String} message "Error occurred while adding members"
  * 
+ * @apiError (400: Message Insertion Error) {String} message "Error occurred while inserting first message"
+ * 
  * @apiError (400: SQL Error) {String} message "SQL Error"
  * @apiError (400: SQL Error) {String} error the error details
  * 
@@ -56,7 +61,8 @@ let isStringProvided = validation.isStringProvided;
 router.post("/", (request, response, next) => {
     // make sure data is given
     if (!isStringProvided(request.body.name)
-            || request.body.memberIds == undefined) {
+            || request.body.memberIds == undefined
+            || !isStringProvided(request.body.firstMessage)) {
         response.status(400).send({
             message: "Missing required information"
         });
@@ -154,12 +160,30 @@ console.log(query);
             });
         });
     
-}, (request, response) =>{
-    response.send({
-         success: true,
-         chatID: request.body.newChatId,
-         chatName: request.body.name
-    });
+}, (request, response) => {
+    // insert the first message into the chat
+    let query = `INSERT INTO Messages(ChatId, Message, MemberId)
+                 VALUES($1, $2, $3)`
+                 `INSERT INTO Messages(ChatId, Message, MemberId)
+                 VALUES($1, $2, $3)`
+    let values = [request.body.newChatId, 
+                  request.body.firstMessage, 
+                  request.decoded.memberid];
+
+    pool.query(query, values)
+        .then(result => {
+            // message was inserted, so send success
+            response.send({
+                success: true,
+                chatID: request.body.newChatId,
+                chatName: request.body.name
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "Error occurred while inserting first message",
+            });
+        });
 });
 
 
