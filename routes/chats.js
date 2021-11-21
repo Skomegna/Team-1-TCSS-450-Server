@@ -147,7 +147,7 @@ router.post("/", (request, response, next) => {
         query = "INSERT INTO ChatMembers (chatid, memberid) VALUES (" 
                 + newChatId + ", " + request.decoded.memberid + ")";
     }
-console.log(query);
+
 
     pool.query(query)
         .then(result => {
@@ -247,7 +247,7 @@ router.put("/:chatId/", (request, response, next) => {
     let query = 'SELECT * FROM Members WHERE MemberId=$1';
     let values = [request.decoded.memberid];
 
-console.log(request.decoded);
+
 
     pool.query(query, values)
         .then(result => {
