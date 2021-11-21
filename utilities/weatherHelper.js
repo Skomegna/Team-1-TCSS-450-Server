@@ -5,6 +5,22 @@
 
 
 /**
+ * 
+ * This function translate obtained time to local for requested weather.
+ */
+ function dtToHumanDate(request, response, next) {
+     // Time for a time-zone in which a local machine is.
+    let currentTimeLocal = new Date();
+    // this is the current time with NO timezone applied - this is a universal value
+    let currentTimeUTC = currentTimeLocal.getTime() + (currentTimeLocal.getTimezoneOffset() * 60 * 1000);
+    // now we apply the timezone offset provided by our API
+    let currentTimeRequestedLocation = currentTimeUTC + (request.body.data.timezone_offset * 1000);
+    request.body.humanTime = currentTimeRequestedLocation;
+    
+    next();
+ }
+
+/**
  * This function takes data from a request, parses through it, and returns
  * temperature, humidity, fills like, and icon for current weather
  * and pass it as a response currentDate.
@@ -12,7 +28,7 @@
  * If the body of the request is undefined, it throws an error message.
  */
 function createCurrentWeather(request, response, next) {
-    let timeZO = request.body.data.timezone_offset;
+
     if (request.body.data === undefined) {
         response.status(400).send({
             message: "No current weather data"
@@ -23,7 +39,7 @@ function createCurrentWeather(request, response, next) {
         const tempVal = Math.round(request.body.data.current.temp);
         const humidityVal = Math.round(request.body.data.current.humidity);
         const feels_likeVal = Math.round(request.body.data.current.feels_like);
-        const chance_rainVal = Math.round(request.body.data.hourly[0].pop);
+        const chance_rainVal = request.body.data.hourly[0].pop;
         const iconVal = request.body.data.current.weather[0].icon;
 
         // assign the json object to request.body.currentData
@@ -34,7 +50,7 @@ function createCurrentWeather(request, response, next) {
             curRain: chance_rainVal,
             ccurIcon: iconVal
         };
-        request.body.timeZoneOffset = timeZO;
+
         next();
     }
 }
@@ -51,9 +67,9 @@ function createHourlyWeather(request, response, next) {
     let hVal;
     let tempVal;
     let iconVal;
-    let humadDate = new Date(request.body.humanTime);
+    let humanDate = new Date(request.body.humanTime);       //.adjHumanTime);
 
-    hVal =  humadDate.getHours();
+    hVal =  humanDate.getHours();
 
     // makes an object with needed data for hourly weather
     for (let i = 0; i < 24; i++) {
@@ -84,12 +100,11 @@ function createDailyWeather(request, response, next) {
 
     // retrieves data from the request body
     let days = [];
-    let theHumanDate = request.body.humanTime; // "2021-11-18 50:00:00"
     
-    let dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    let dateObj = new Date(theHumanDate.split(" ")[0]);
-    let dayIndex = dateObj.getDay();
-    
+    let dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let dateObj = new Date(request.body.humanTime);     //theHumanDate);
+    let dayIndex = dateObj.getDay(); 
+
     // makes an object with needed data for daily weather
     for (let i = 0; i < 7; i++) {
        
@@ -114,6 +129,7 @@ function createDailyWeather(request, response, next) {
 
 
 module.exports = {
+    dtToHumanDate,
     createCurrentWeather,
     createHourlyWeather,
     createDailyWeather
