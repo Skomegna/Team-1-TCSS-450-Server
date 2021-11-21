@@ -163,9 +163,7 @@ console.log(query);
 }, (request, response) => {
     // insert the first message into the chat
     let query = `INSERT INTO Messages(ChatId, Message, MemberId)
-                 VALUES($1, $2, $3)`
-                 `INSERT INTO Messages(ChatId, Message, MemberId)
-                 VALUES($1, $2, $3)`
+                 VALUES($1, $2, $3)`;
     let values = [request.body.newChatId, 
                   request.body.firstMessage, 
                   request.decoded.memberid];
