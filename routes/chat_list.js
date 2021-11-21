@@ -21,7 +21,7 @@ const pool = require('../utilities/exports').pool;
  */ 
 
 /**
- * @api {get} /chats/list/ Request to get a list chats the requester is a member in.
+ * @api {get} /chats/all/ Request to get a list chats the requester is a member in.
  * @apiName GetChats
  * @apiGroup Chats/List/
  * 
@@ -50,7 +50,7 @@ const pool = require('../utilities/exports').pool;
  *          ...
  *          {
  *              "chatid": 33,
- *              "message": "But why do we have weather in a chat app?",
+ *              "message": "But why do we need weather in a chat app?",
  *              "timestamp": "2021-11-21T17:44:48.012Z",
  *              "chat_name": "Steven, Austn, Parker, Alex, and Chris"
  *          }, 
