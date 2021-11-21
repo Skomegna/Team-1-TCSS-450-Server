@@ -21,13 +21,15 @@ const pool = require('../utilities/exports').pool;
  */ 
 
 /**
- * @api {get} /chats/list/ Request to get a list chats the requester is a member in.
+ * @api {get} /chats/all/ Request to get a list chats the requester is a member in.
  * @apiName GetChats
  * @apiGroup Chats/List/
  * 
  * @apiDescription Responds with a list of chat objects the
                    request sender is a member of. Each chat object contains 
-                   the name of the chat and the unique ID of the chat.
+                   the name of the chat, a unique id of the chat, 
+                   the most recent message, 
+                   and the timestamp of when the most recent message was sent.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
@@ -40,27 +42,42 @@ const pool = require('../utilities/exports').pool;
  *      "success":true,
  *      "data":[
  *          {
- *              "chatId":"1",
- *              "name":"Global Chat"
+ *              "chatid": 42,
+ *              "message": "This is the most recent message!",
+ *              "timestamp": "2021-11-21T17:14:05.305Z",
+ *              "chat_name": "Global Chat"
  *          }, 
+ *          ...
  *          {
- *              "chatid":"2",
- *              "name":"Chat 2"
- *          }
+ *              "chatid": 33,
+ *              "message": "But why do we need weather in a chat app?",
+ *              "timestamp": "2021-11-21T17:44:48.012Z",
+ *              "chat_name": "Steven, Austn, Parker, Alex, and Chris"
+ *          }, 
  *      ]
  *  }
  *
  * @apiUse SQLError
  */
-router.get('/', (request, response, next) => {
-    // we know that jwt is given, so get database data
-    let query = `SELECT chatid FROM ChatMembers WHERE MemberID=$1`;
+router.get('/', (request, response) => {
+    // we know that jwt is given and is valid, 
+    // so we can immediately get the database data
+    let query = `SELECT m.chatid AS chatid,
+                 m.message AS message, 
+                 m.timestamp AS timestamp, 
+                 c.name AS chat_name
+                 FROM Messages m, chats c WHERE m.chatID = c.chatID AND m.chatID IN 
+                 (SELECT chatID FROM ChatMembers WHERE memberid=$1) 
+                 AND primarykey IN (select max(primarykey) 
+                 FROM Messages GROUP BY chatid, c.name)`;
     let values = [request.decoded.memberid];
 
     pool.query(query, values)
         .then(result => {
-            request.body.chatIDs = result.rows;
-            next();
+            response.status(201).send({
+                success: true,
+                data: result.rows
+            });
         })
         .catch(err => {
             response.status(400).send({
@@ -68,54 +85,6 @@ router.get('/', (request, response, next) => {
                 error: err
             });
         });
-}, (request, response) => {
-    // create a list of chatIDs and Chat names based on the 
-    // chatIDs at requests.body.chatIDs
-    
-    
-    if (request.body.chatIDs.length == 0) {
-        // send an empty data array if we don't have any chat IDs to send
-        response.status(201).send({
-            success: true,
-            data: []
-        });
-    } else {
-        // get the chatID and the name from the list 
-        // of chatIDs and send it 
-        let query = "SELECT row_to_json(row(chatid, name)) FROM Chats WHERE ";
-        for (let i = 0; i < request.body.chatIDs.length; i++) {
-            query += "ChatID=" + request.body.chatIDs[i].chatid + " OR ";
-        }
-        query = query.substring(0, query.length - 3) + ";";
-    
-        pool.query(query)
-            .then(result => {
-                
-                // format the data (see documentation for format)
-                let resultArr = new Array(result.rowCount);
-
-                for (let i = 0; i < resultArr.length; i++) {
-                    let row = result.rows[i].row_to_json;
-                    resultArr[i] = {
-                        chatId: row.f1,
-                        name: row.f2
-                    };
-                }
-                
-                response.status(201).send({
-                    success: true,
-                    data: resultArr
-                });
-            })
-            .catch(error => {
-                response.status(400).send({
-                    message: "SQL Error",
-                    error: error
-                });
-            }) 
-    }
-
-    
 });
 
 module.exports = router;
