@@ -82,29 +82,26 @@ router.get('/', (request, response, next) => {
     } else {
         // get the chatID and the name from the list 
         // of chatIDs and send it 
-        let query = "SELECT (chatid, name) FROM Chats WHERE ";
+        let query = "SELECT row_to_json(row(chatid, name)) FROM Chats WHERE ";
         for (let i = 0; i < request.body.chatIDs.length; i++) {
             query += "ChatID=" + request.body.chatIDs[i].chatid + " OR ";
         }
         query = query.substring(0, query.length - 3) + ";";
-        console.log(query);
     
         pool.query(query)
             .then(result => {
                 
                 // format the data (see documentation for format)
                 let resultArr = new Array(result.rowCount);
-                
+
                 for (let i = 0; i < resultArr.length; i++) {
-                    let rowString = result.rows[i].row;
-                    let rowArr = rowString.split(',');
-    
+                    let row = result.rows[i].row_to_json;
                     resultArr[i] = {
-                        chatId: rowArr[0].substring(1),
-                        name: rowArr[1].substring(1, rowArr[1].length - 2)
+                        chatId: row.f1,
+                        name: row.f2
                     };
                 }
-    
+                
                 response.status(201).send({
                     success: true,
                     data: resultArr
