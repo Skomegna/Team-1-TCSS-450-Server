@@ -157,7 +157,8 @@ console.log(query);
 }, (request, response) =>{
     response.send({
          success: true,
-         chatID: request.body.newChatId
+         chatID: request.body.newChatId,
+         chatName: request.body.name
     });
 });
 
