@@ -32,6 +32,12 @@ const humanDateAPI = 'https://showcase.api.linx.twenty57.net/UnixTime/fromunixti
 const apiKey = process.env.weather_API;
 
 /**
+ * @apiDefine JSONError
+ * @apiError (400: JSON Error) {String} message "malformed JSON in parameters"
+ */ 
+
+
+/**
  * @api {get} /weather/:zip? Request to get weather data 
  * @apiName GetWeather
  * @apiGroup Weather
@@ -39,12 +45,18 @@ const apiKey = process.env.weather_API;
  * @apiDescription Request to get current weather information for current, daily,
  * and hourly weather.
  * 
- * @apiParam {Number} zip code to look up. 
+ * @apiParam {Number} zip the zip code to look up. 
  * 
- * @apiSuccess (Success 201) {boolean} success 
- * @apiSuccess (Success 201) {Object}  currentData
- * @apiSuccess (Success 201) {Array}  hourData
- * @apiSuccess (Success 201) {Array}  dailyData
+ * @apiSuccess (Success 201) {boolean} success true if the data is given
+ * @apiSuccess (Success 201) {Object}  currentData the JSON object 
+                                       containing the data about the 
+                                       current weather
+ * @apiSuccess (Success 201) {Array}  hourData the JSON object 
+                                      containing the data about the 
+                                      next 24 hours
+ * @apiSuccess (Success 201) {Array}  dailyData the JSON object 
+                                      containing the data about the 
+                                      next 7 days
  * 
  * @apiSuccessExample {json} Response-Success-Example:
  * {
@@ -84,11 +96,14 @@ const apiKey = process.env.weather_API;
     ]
 }
  *      
+ * @apiError (404: Missing Parameters) {String} message
+ *                                              "Missing required information"
  * 
- * @apiError (404: Missing Parameters) {String} message "Missing required information"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a number" 
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. Zip Code must be a five digits"
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter.
+                                               Zip Code must be a number" 
  * 
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. 
+                                               Zip Code must be a five digits"
  * 
  * @apiUse JSONError
  */
