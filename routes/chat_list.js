@@ -23,7 +23,7 @@ const pool = require('../utilities/exports').pool;
 /**
  * @api {get} /chats/all/ Request to get a list chats the requester is a member in.
  * @apiName GetChats
- * @apiGroup Chats/List/
+ * @apiGroup Chats/All/
  * 
  * @apiDescription Responds with a list of chat objects the
                    request sender is a member of. Each chat object contains 
@@ -87,6 +87,6 @@ router.get('/', (request, response) => {
         });
 });
 
-module.exports = router;
+module.exports = router; 
 
 
