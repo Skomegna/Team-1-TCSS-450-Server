@@ -69,24 +69,3 @@ CREATE TABLE Push_Token (KeyID SERIAL PRIMARY KEY,
                         Token VARCHAR(255),
                         FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
 );
-
-SELECT chat.name, message.ChatID, message.Message, message.TimeStamp
-FROM Chats chat, Messages message
-WHERE message.ChatID=chat.message AND chat.ChatID='$1'
-
-
-select mes.message, mes.chatid, mes.timeStamp 
-from messages mes, chats ch where =(select cm.chatid from chatmembers where cm.memberid=);
-
-
-SELECT transaction_id, checkings_id, amount, category_id
-FROM Transactions t1
-WHERE amount > (
-  SELECT AVG(t2.amount)
-  FROM Transactions t2
-  WHERE t2.category_id=t1.category_id
-    AND t2.savings_id IS NULL
-    AND t1.savings_id IS NULL)
-ORDER BY category_id ASC;
-
-Select distinct message, MAX(messageID) OVER (PARTITION BY chat.chatid) AS MessageID FROM messages, 
