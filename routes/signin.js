@@ -84,7 +84,8 @@ router.get('/', (request, response, next) => {
         });
     };
 }, (request, response) => {
-    const theQuery = "SELECT Password, Salt, MemberId, Verification FROM Members WHERE Email=$1";
+    const theQuery = "SELECT Password, Salt, MemberId, FirstName, LastName,"
+            + "Nickname, Verification FROM Members WHERE Email=$1";
     const theEmail = (request.auth.email).toLowerCase();
     const values = [theEmail];
     pool.query(theQuery, values)
@@ -115,7 +116,10 @@ router.get('/', (request, response, next) => {
                 let token = jwt.sign(
                     {
                         "email": request.auth.email,
-                        "memberid": result.rows[0].memberid
+                        "memberid": result.rows[0].memberid,
+                        "nickname": result.rows[0].nickname,
+                        "firstname": result.rows[0].firstname,
+                        "lastname": result.rows[0].lastname,
                     },
                     config.secret,
                     { 
