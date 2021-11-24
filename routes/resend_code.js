@@ -28,9 +28,12 @@ const router = express.Router();
  * 
  * @apiParam {String} email a users email *unique
  * 
+ * @apiParam {String} codeType type of code for email generation
+ * 
  * @apiParamExample {json} Request-Body-Example:
  *  {
  *      "email":"cfb3@fake.email"
+ *      "codeType":"register"
  *  }
  * 
  * @apiSuccess (Success 201) {boolean} success true when code is created, stored, and sent in an email
