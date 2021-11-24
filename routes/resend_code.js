@@ -50,7 +50,7 @@ router.post('/', (request, response, next) => {
     const email = request.body.email;
     const codeType = request.body.codeType;
     console.log(email);
-    if (isStringProvided(email) || !isStringProvided(request.body.codeType)) {
+    if (isStringProvided(email) && isStringProvided(request.body.codeType)) {
         next();
     } else {
         response.status(400).send({
