@@ -251,7 +251,7 @@ router.get("/:location?", (request, response, next) => {
                 message: "Weather API Error",
                 error: error
             })
-        })
+        });
 }, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
 
     // returns needed weather data as three objects:

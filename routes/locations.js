@@ -178,7 +178,7 @@ router.post('/', (request, response, next) => {
     pool.query(query, values)
         .then(result => {
             response.status(201).send({
-                success: true,
+                success: true
             });
         })
         .catch(err => {
