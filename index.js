@@ -32,6 +32,8 @@ app.use('/auth/resendcode', require('./routes/resend_code.js'));
 
 app.use('/password/reset', require('./routes/password_reset'));
 
+app.use('/weather/locations', middleware.checkToken, require('./routes/locations.js'));
+
 app.use('/weather', middleware.checkToken, require('./routes/weather.js'));
 
 app.use('/auth', middleware.checkToken, require('./routes/pushyregister.js'));
@@ -45,6 +47,8 @@ app.use('/chats', middleware.checkToken, require('./routes/chats.js'));
 app.use('/contacts', middleware.checkToken, require('./routes/contacts.js'));
 
 app.use('/contacts/requests', middleware.checkToken, require('./routes/contact_requests.js'));
+
+
 
 
 /*
