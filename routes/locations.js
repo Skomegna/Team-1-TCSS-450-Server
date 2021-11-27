@@ -132,13 +132,13 @@ router.post('/', (request, response, next) => {
 
             if (result.rowCount < MAX_LOCATIONS_ALLOWED) {
                 next();
-            } 
-
-            // throw a failure response if the usr can not add another 
-            // location. Error thrown will cause the following catch to happen
-            response.status(400).send({
-                message: "SQL Error from Location Storage Size",
-            });
+            } else {
+                // throw a failure response if the usr can not add another 
+                // location. Error thrown will cause the following catch to happen
+                response.status(400).send({
+                    message: "Max Location Storage Size Reached",
+                });
+            }
 
         })
         .catch(err => {
