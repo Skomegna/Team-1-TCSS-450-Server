@@ -22,8 +22,8 @@ const database = require('./database_utilities.js');
 const sendEmail = require('./email.js').sendEmail;
 
 // pushy tools
-let messaging = require('./pushy_utilities.js')
+let pushyTools = require('./pushy_utilities.js')
 
 module.exports = { 
-    pool, generateHash, generateSalt, validation, database, sendEmail, weatherChecker, messaging
+    pool, generateHash, generateSalt, validation, database, sendEmail, weatherChecker, pushyTools
 };

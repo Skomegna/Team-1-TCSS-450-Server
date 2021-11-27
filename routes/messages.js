@@ -11,7 +11,7 @@ const pool = require('../utilities/exports').pool;
 
 const router = express.Router();
 
-const msg_functions = require('../utilities/exports').messaging;
+const msg_functions = require('../utilities/exports').pushyTools;
 
 const validation = require('../utilities/exports').validation;
 let isStringProvided = validation.isStringProvided;

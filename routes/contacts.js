@@ -16,6 +16,10 @@ const pool = require('../utilities/exports').pool;
 
 const validation = require('../utilities').validation;
 
+const push_tools = require('../utilities/exports').pushyTools;
+const sendContactDeletionNotif = push_tools.sendContactDeletionNotif;
+
+
 const databaseUtils = require('../utilities/exports').database;
 const getContactInfo = databaseUtils.getContactInfo;
 
@@ -31,6 +35,13 @@ let isStringProvided = validation.isStringProvided;
  * @apiDefine SQLError
  * @apiError (400: SQL Error) {String} message "SQL Error"
  * @apiError (400: SQL Error) {String} error   the error
+ */ 
+
+/**
+ * @apiDefine PushError
+ * @apiError (400: SQL Push Error) {String} message 
+              "SQL Error on select from push token"
+ * @apiError (400: SQL Push Error) {String} error the error
  */ 
 
 /**
@@ -155,6 +166,8 @@ router.get('/', (request, response, next) => {
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
  *
  * @apiUse SQLError
+ * 
+ * @apiUse PushError
  */
  router.delete('/:contactId/', (request, response, next) => {
     // ensure the contactId is given and is a number
@@ -170,7 +183,7 @@ router.get('/', (request, response, next) => {
         next();
     }
 
- }, (request, response) => {
+ }, (request, response, next) => {
     // no need to check if the contactId is valid. Just go through the 
     // database and delete if if we see it. 
 
@@ -181,15 +194,40 @@ router.get('/', (request, response, next) => {
 
     pool.query(query, values)
         .then(result => {
-            // successfully deleted the contacts if they existed, send success
-            response.status(400).send({
-                success: true
-            });
+            // contacts deleted, so send notifs that 
+            // contacts list may have changed
+            next(); 
         })
         .catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: error
+            });
+        });
+ }, (request, response) => {
+    // successfully deleted the contacts if they existed, send success
+    let query = `SELECT token FROM Push_Token
+                 WHERE MemberId=$1 OR MemberId=$2`;
+    let values = [request.decoded.memberid, request.params.contactId];
+    pool.query(query, values)
+        .then(result => {
+
+            result.rows.forEach(entry =>  
+                sendContactDeletionNotif(
+                    entry.token,
+                    request.params.contactId,
+                    request.decoded.memberid,
+                    request.decoded.nickname
+                ));
+
+            response.send({
+                success: true
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
             });
         });
  });
