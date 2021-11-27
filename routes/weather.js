@@ -56,7 +56,9 @@ const locationApiKey = process.env.location_API_Key;
  * @apiDescription Request to get current weather information for current, daily,
  * and hourly weather.
  * 
- * @apiParam {Number} location the zip code or lat/long to look up. 
+ * @apiParam {Number} location the zip code or lat/long to look up.
+                       The zipcode can be hardcoded into url, lat/long 
+                       should be hardcoded with a ':' between
  * 
  * @apiSuccess (Success 201) {boolean} success true if the data is given
  * @apiSuccess (Success 201) {Object}  currentData the JSON object 
@@ -250,7 +252,7 @@ router.get("/:location?", (request, response, next) => {
             response.status(400).send({
                 message: "Weather API Error",
                 error: error
-            })
+            });
         });
 }, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
 
