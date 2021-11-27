@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains pushy notification utility functions
  */
 
 const Pushy = require('pushy');
@@ -58,6 +60,7 @@ function sendContactRequestResponseNotif(token, toMemberId, fromMemberId,
     sendPushy(token, data);                                      
 }
 
+
 /*
  * Sends a contact  notification to a specific client specified by the token 
  * notifying that someone deleted their contact
@@ -70,7 +73,6 @@ function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId,
         "deletorId": deleterMemberId,
         "fromNickname": deleterNickname,   
     };
-    console.log(data);
     sendPushy(token, data);                                      
 }
 
@@ -99,20 +101,3 @@ module.exports = {
     sendContactRequestResponseNotif, 
     sendContactDeletionNotif
 }
-
-//add other "sendTypeToIndividual" functions here. Don't forget to export them
-
-
-// notify of a message (DONE)
-// notify of a contact request (sent recieved) DONE  (accepted, rejected) DONE
-// notify of a change in contacts (delete) (DONE)
-
-
-// CHECKLIST: 
-
-// contact request sent              DONE
-// contact request recieved          DONE
-// contact request responded to      DONE
-// contact request recieved response DONE
-// contact deleted you               
-
