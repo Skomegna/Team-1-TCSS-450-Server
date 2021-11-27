@@ -46,8 +46,7 @@ const locationApiKey = process.env.location_API_Key;
 /**
  * @apiDefine JSONError
  * @apiError (400: JSON Error) {String} message "malformed JSON in parameters"
- */ 
-
+ */
 
 /**
  * @api {get} /weather/:location? Request to get weather data 
@@ -128,7 +127,7 @@ const locationApiKey = process.env.location_API_Key;
  * 
  * @apiUse JSONError
  */
-router.get("/:location?", (request, response, next) => { 
+router.get("/:location?", (request, response, next) => {
 
     if (isStringProvided(request.params.location)) {
         next();
@@ -139,50 +138,50 @@ router.get("/:location?", (request, response, next) => {
 
     // If passed lat/long, it lat and long, and retrive city information
     if (isNaN(request.params.location)) {
-       
+
         const [lat, long] = request.params.location.split(':');
 
         // Checking if lat and long existing and integers
         if (isStringProvided(lat) && isStringProvided(long)
-                && !isNaN(lat) && !isNaN(long)) {
+            && !isNaN(lat) && !isNaN(long)) {
 
-                    const axios = require('axios');
-                    const params = {
-                      auth: locationApiKey,
-                      locate: lat + "," + long,
-                      json: '1'
-                    }
-                    
-                    axios.get(locationAPIurl, {params})
-                      .then(response => {
-                        // console.log(response.data);
+            const axios = require('axios');
+            const params = {
+                auth: locationApiKey,
+                locate: lat + "," + long,
+                json: '1'
+            }
 
-                        let city = response.data.osmtags.name;
-                        let region = response.data.osmtags.is_in_state_code;
+            axios.get(locationAPIurl, { params })
+                .then(response => {
 
-                        // assigned lat, long, region, and city to request
-                        request.body.coordinates = { 
-                            "lat" : lat,
-                            "long" : long,
-                            "region" : region,
-                            "city" : city
-                        };
-                        // console.log("From lat/long: " + city + " " + region);
-                        next();
+                    let city = response.data.city; 
+                    let region = response.data.state;
 
-                      }).catch(error => {
-                        response.status(400).send({
+                    // assigned lat, long, region, and city to request
+                    request.body.coordinates = {
+                        "lat": lat,
+                        "long": long,
+                        "region": region,
+                        "city": city
+                    };
+
+                    next();
+
+                }).catch(error => {
+                    response.status(400).send({
                         message: "lat/long to city name API Error",
                         error: error
-                        })
                     })
+                })
 
         } else {
             response.status(400).send({
                 message: "Malformed Location Information"
             });
         };
-    }  else {   // if passed zip code, it retrives lat, lang, city, and region
+    } else {   
+        // if passed zip code, it retrives lat, lang, city, and region
         let zipCode = request.params.location;
 
         // checking if zip code is exact 5 digits
@@ -191,7 +190,7 @@ router.get("/:location?", (request, response, next) => {
                 message: "Malformed parameter. Zip Code must be a five digits"
             })
         } else {
-            
+
             const params = {
                 auth: locationApiKey,
                 locate: zipCode,
@@ -199,63 +198,60 @@ router.get("/:location?", (request, response, next) => {
                 json: '1'
             }
 
-            axios.get(locationAPIurl, {params})
-            .then(response => { 
-                
-                // assign the weather data to request.body
-                let lat = response.data.latt;
-                let long = response.data.longt;
-                let city = response.data.standard.city;
-                let region = response.data.standard.region;
+            axios.get(locationAPIurl, { params })
+                .then(response => {
+                    // assign the weather data to request.body
+                    let lat = response.data.latt;
+                    let long = response.data.longt;
+                    let city = response.data.standard.city;
+                    let region = response.data.standard.region;
 
-                console.log("Lat/long: " + lat + " " + long +
-                    city + " " + region);
-                request.body.coordinates = { 
-                    "lat" : lat,
-                    "long" : long,
-                    "region" : region,
-                    "city" : city
-                };
-                next();
-    
-            }).catch(error => {
-                response.status(400).send({
-                message: "ZIP to lat/lon API Error",
-                error: error
+                    request.body.coordinates = {
+                        "lat": lat,
+                        "long": long,
+                        "region": region,
+                        "city": city
+                    };
+                    next();
+
+                }).catch(error => {
+                    response.status(400).send({
+                        message: "ZIP to lat/lon API Error",
+                        error: error
+                    })
                 })
-            })
         }
     }
-  }, (request, response, next) => {
+}, (request, response, next) => {
 
-      let lat = request.body.coordinates.lat;        // '47.245059';   // '35.6762'; - Tokyo   ;   lat=47.245059'  - Tacoma
-      let long = request.body.coordinates.long;       // '-122.438933'; // '139.6503' - Tokyo   ;   lon=-122.438933' - Tacoma
-      
-      const userLocation = (theUrl, thelat, theMiddleUrl1, theLong, theMiddleUrl2, theApiKey) => {
+    let lat = request.body.coordinates.lat;        // '47.245059';   // '35.6762'; - Tokyo   ;   lat=47.245059'  - Tacoma
+    let long = request.body.coordinates.long;       // '-122.438933'; // '139.6503' - Tokyo   ;   lon=-122.438933' - Tacoma
+
+    const userLocation = (theUrl, thelat, theMiddleUrl1, theLong, theMiddleUrl2, theApiKey) => {
         let newUrl = theUrl + thelat + theMiddleUrl1 + theLong + theMiddleUrl2 + theApiKey;
         return newUrl;
-      };	
-      
-      //compose the weather URL form different parts
-      const apiUrl = userLocation(url, lat, middleUrl1, long, middleUrl2,  apiKey);
+    };
 
-      // fetch a weather data from given url address
-      fetch(apiUrl, {
+    //compose the weather URL form different parts
+    const apiUrl = userLocation(url, lat, middleUrl1, long, middleUrl2, apiKey);
+
+    // fetch a weather data from given url address
+    fetch(apiUrl, {
         method: 'POST',
         body: 'a=1'
-      }) 
-            .then(response => response.json())
-            .then(data => {
-                // assign the weather data to request.body
-                request.body.data = data;
-                next();
- 
-            }).catch(error => {
-              response.status(400).send({
+    })
+        .then(response => response.json())
+        .then(data => {
+            // assign the weather data to request.body
+            request.body.data = data;
+            next();
+
+        }).catch(error => {
+            response.status(400).send({
                 message: "Weather API Error",
                 error: error
-              })
             })
+        });
 }, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
 
     // returns needed weather data as three objects:
@@ -271,6 +267,5 @@ router.get("/:location?", (request, response, next) => {
     });
 
 });
-
 
 module.exports = router;

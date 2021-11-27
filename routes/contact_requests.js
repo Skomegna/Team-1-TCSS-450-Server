@@ -23,6 +23,10 @@ const checkMemberIDExists = databaseUtils.checkMemberIDExists;
 const getContactInfo = databaseUtils.getContactInfo;
 const addMemberID = databaseUtils.addMemberID;
 
+const push_tools = require('../utilities/exports').pushyTools;
+const sendNewContactRequestNotif = push_tools.sendNewContactRequestNotif;
+const sendContactRequestResponseNotif = push_tools.sendContactRequestResponseNotif;
+
 // validation tools
 let isStringProvided = validation.isStringProvided;
 
@@ -37,7 +41,14 @@ let isStringProvided = validation.isStringProvided;
  * @apiError (400: SQL Error) {String} error   the error
  */ 
 
+ 
 
+/**
+ * @apiDefine PushError
+ * @apiError (400: SQL Push Error) {String} message 
+              "SQL Error on select from push token"
+ * @apiError (400: SQL Push Error) {String} error the error
+ */ 
 
 
 
@@ -76,6 +87,8 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apiError (400: Contact Request Exists) {String} message 
         "Contact request already exists"
+ * 
+ * @apiUse PushError
  * 
  * @apiUse SQLError
  * 
@@ -161,7 +174,7 @@ router.post('/', (request, response, next) => {
             });
         })
 
-}, (request, response) => {
+}, (request, response, next) => {
     // add the request to the databasee
     const myID = request.decoded.memberid;
     const otherID = request.body.otherMemberID;
@@ -174,9 +187,7 @@ router.post('/', (request, response, next) => {
     pool.query(insert, values)
         .then(result => {
             // successfully stored the contact request in the database
-            response.status(201).send({ 
-                success: true, 
-            });
+            next();
         })
         .catch((err) => {
             // an sql error occurred
@@ -185,7 +196,37 @@ router.post('/', (request, response, next) => {
                 error: err
             });
         })    
+}, (request, response) => {
+    // send a notification for the new contact request 
+    // to the sender and the reciever
+    let query = `SELECT token FROM Push_Token
+                 WHERE MemberId=$1 OR MemberId=$2`;
+    let values = [request.decoded.memberid, request.body.otherMemberID];
+    
+    pool.query(query, values)
+        .then(result => {
+
+            result.rows.forEach(entry =>  
+                sendNewContactRequestNotif(
+                    entry.token,
+                    request.body.otherMemberID,
+                    request.decoded.memberid, 
+                    request.decoded.nickname
+                ));
+
+            response.send({
+                success: true
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
+            });
+        });
 });
+
+
 
 
 
@@ -305,6 +346,8 @@ router.get('/', (request, response, next) => {
         "Contact request does not exist"
  * 
  * @apiUse SQLError
+ * 
+ * @apiUse PushError
  *
  */
 router.put('/', (request, response, next) => {
@@ -377,7 +420,7 @@ router.put('/', (request, response, next) => {
         next();
     }
  
-}, (request, response) => {
+}, (request, response, next) => {
     // delete all instances of a contact request between
     //  these two members (can be either direction)
 
@@ -388,10 +431,7 @@ router.put('/', (request, response, next) => {
 
     pool.query(query, values)
             .then(result => {
-                // everything was deleted successfully, so response success
-                response.status(200).send({
-                    success: true
-                });
+                next();
             })
             .catch(err => {
                 response.status(400).send({
@@ -399,6 +439,36 @@ router.put('/', (request, response, next) => {
                     detail: err.detail
                 });
             });   
+}, (request, response) => {
+    
+    // everything was deleted successfully, so send pushy notifying the
+    // contact request response and send the success response
+    let query = `SELECT token FROM Push_Token
+                 WHERE MemberId=$1 OR MemberId=$2`;
+    let values = [request.body.memberID, request.decoded.memberid];
+    
+    pool.query(query, values)
+        .then(result => {
+
+            result.rows.forEach(entry =>  
+                sendContactRequestResponseNotif(
+                    entry.token,
+                    request.body.memberID,
+                    request.decoded.memberid, 
+                    request.decoded.nickname,
+                    request.body.isAccepting
+                ));
+
+            response.send({
+                success: true
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
+            });
+        });
 });
 
 

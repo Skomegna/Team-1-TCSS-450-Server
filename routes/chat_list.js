@@ -33,7 +33,7 @@ const pool = require('../utilities/exports').pool;
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
- * @apiSuccess {boolean} succes true when the list of chats is created
+ * @apiSuccess {boolean} success true when the list of chats is created
  * @apiSuccess {Array} data the array of objects that each
                contain a chatID and name
  *

@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains pushy notification utility functions
  */
 
 const Pushy = require('pushy');
@@ -8,16 +10,77 @@ const Pushy = require('pushy');
 // Plug in your Secret API Key 
 const pushyAPI = new Pushy(process.env.PUSHY_API_KEY);
 
-//use to send message to a specific client by the token
+/* 
+ * Sends a message pushy notification to a specific 
+ * client specified by the token
+ */
 function sendMessageToIndividual(token, message) {
-
-    //build the message for Pushy to send
+    
+    // the data to send
     var data = {
         "type": "msg",
         "message": message,
         "chatid": message.chatid
     }
+    sendPushy(token, data);
+}
 
+/*
+ * Sends a new contact request notification to a specific
+ * client specified by the token.
+ * 
+ * Use this whenever someone sends or recieves a new contact request.
+ */
+function sendNewContactRequestNotif(token, toMemberId, fromMemberId, 
+                                    fromNickname) {
+    const data = {
+        "type": "newContactRequest",
+        "toId": toMemberId,
+        "fromId": fromMemberId,
+        "fromNickname": fromNickname
+    };
+
+    sendPushy(token, data);
+}
+
+
+/*
+ * Sends a contact request response notification to a specific
+ * client specified by the token. 
+ */
+function sendContactRequestResponseNotif(token, toMemberId, fromMemberId, 
+                                         fromNickname, isAccept) {
+    const data = {
+        "type": "contactRequestResponse",
+        "toId": toMemberId,
+        "fromId": fromMemberId,
+        "fromNickname": fromNickname,
+        "isAccept":  isAccept
+    };
+    sendPushy(token, data);                                      
+}
+
+
+/*
+ * Sends a contact  notification to a specific client specified by the token 
+ * notifying that someone deleted their contact
+ */
+function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId, 
+                                  deleterNickname) {
+    const data = {
+        "type": "contactDeleted",
+        "deletedId": deletedMemberId,
+        "deletorId": deleterMemberId,
+        "fromNickname": deleterNickname,   
+    };
+    sendPushy(token, data);                                      
+}
+
+/* 
+ * Sends a pushy notification to the account corresponding to the given token
+ * that includes the given data
+ */ 
+function sendPushy(token, data) {
 
     // Send push notification via the Send Notifications API 
     // https://pushy.me/docs/api/send-notifications 
@@ -32,8 +95,9 @@ function sendMessageToIndividual(token, message) {
     })
 }
 
-//add other "sendTypeToIndividual" functions here. Don't forget to export them
-
 module.exports = {
-    sendMessageToIndividual
+    sendMessageToIndividual,
+    sendNewContactRequestNotif, 
+    sendContactRequestResponseNotif, 
+    sendContactDeletionNotif
 }
