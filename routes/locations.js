@@ -30,6 +30,7 @@ const pool = require('../utilities/exports').pool;
 const MAX_LOCATIONS_ALLOWED = 10;
 
 
+
 /**
  * @apiDefine SQLError
  * @apiError (400: SQL Error) {String} message "SQL Error"
@@ -55,28 +56,23 @@ const MAX_LOCATIONS_ALLOWED = 10;
  *      "success": true,
  *      "data":[
  *          {
- *              "nickname": "Tacoma",
  *              "lat":"47.2529"
  *              "long":"122.4443"
- *              "zip":"98402"
  *          }
  *          ...
  *          {
- *              "nickname": "Portland",
  *              "lat":"45.5152"
  *              "long":"122.6784"
- *              "zip":"97035"
  *          }
  *      ]
  *  }
  * 
  * @apiUse SQLError
  */
-
 router.get('/', (request, response) => {
     // already know that jwt is checked and is valid, 
     // so get data from locations table
-    let query = `SELECT Nickname, Lat, Long, Zip FROM Locations WHERE MemberId=$1`;
+    let query = `SELECT Lat, Long FROM Locations WHERE MemberId=$1`;
     let values = [request.decoded.memberid];
 
     pool.query(query, values)
@@ -132,34 +128,35 @@ router.post('/', (request, response, next) => {
     let values = [request.decoded.memberid];
 
     pool.query(query, values)
-        .then((results) => {
-    
-            if (results.rowCount < MAX_LOCATIONS_ALLOWED) {
+        .then(result => {
+
+            if (result.rowCount < MAX_LOCATIONS_ALLOWED) {
                 next();
-            } else {
-                response.status(400).send({
-                    message: "Location Storage Full",
-                    error: err
-                });
-            }
-        })
-        .catch((err) => {
+            } 
+
+            // throw a failure response if the usr can not add another 
+            // location. Error thrown will cause the following catch to happen
             response.status(400).send({
-                message: "SQL Error",
-                error: err
+                message: "SQL Error from Location Storage Size",
+            });
+
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error from Location Storage Size",
             });
         });
 
 }, (request, response, next) => {
-    // check to make sure params are given
-    if (isStringProvided(request.body.zip)) {
-        // add the lat long and location name to the body
-        addLatLongAndLocation(request, response, next);
+    // check which params are given and act accordingly
+    if (isStringProvided(request.body.lat)
+            && isStringProvided(request.body.long)) {
+        // lat/long is already provided so move on
+        next();
 
-    } else if (isStringProvided(request.body.lat)
-        && isStringProvided(request.body.long)) {
-        // add the zipcode and location name to the body
-        addZipAndLocation(request, response, next);
+    } else if (isStringProvided(request.body.zip)) {
+        // zipcode is provided, so get the lat/long
+        addLatLong(request, response, next);
 
     } else {
         // don't have required information
@@ -168,15 +165,15 @@ router.post('/', (request, response, next) => {
         });
     }
 }, (request, response) => {
+    
     // insert the new location into the database
     let lat = request.body.lat;
     let long = request.body.long;
-    let zip = request.body.zip;
-    let name = request.body.name;
-
-    let query = `INSERT INTO Locations(MemberId, Nickname, Lat, Long, Zip)
-                 VALUES ($1, $2, $3, $4, $5)`;
-    let values = [request.body.memberid, name, lat, long, zip];
+    console.log(request.decoded.memberid);
+    
+    let query = `INSERT INTO Locations(MemberId, Lat, Long)
+                 VALUES ($1, $2, $3)`;
+    let values = [request.decoded.memberid, lat, long];
 
     pool.query(query, values)
         .then(result => {
@@ -190,48 +187,44 @@ router.post('/', (request, response, next) => {
                 error: err
             });
         });
-
 });
 
 /*
- * Adds the lat, long, and name to request.body
+ * Adds the lat and long to the body given the 
+ * zipcode at request.body.zip
  */
-function addLatLongAndLocation(request, response, next) {
-    next();
-}
+function addLatLong(request, response, next) {
+    let zipcode = request.body.zip;
 
-/*
- * Adds the zipcode and location name to request.body
- */
-function addZipAndLocation(request, response, next) {
+    if (zipcode.length < 5 || zipcode.length > 5) {
+        // zipcode is not 5 digits.
+        response.status(400).send({
+            message: "Malformed parameter. Zip Code must be a five digits"
+        })
 
-    const params = {
-        auth: locationApiKey,
-        locate: request.body.lat + "," + request.body.long,
-        json: '1'
+    } else {
+        // get the lat/long from zipcode
+        const params = {
+            auth: locationApiKey,
+            locate: zipcode,
+            region: 'US',
+            json: '1'
+        };
+
+        axios.get(locationAPIurl, { params })
+            .then(response => {
+                // assign the retrieved lat and long to the body
+                request.body.lat = response.data.latt;
+                request.body.long = response.data.longt;
+                next();
+
+            }).catch(error => {
+                response.status(400).send({
+                    message: "ZIP to lat/lon API Error",
+                    error: error
+                })
+            });
     }
-
-    axios.get(locationAPIurl, { params })
-        .then(result => {
-console.log(result);
-            let city = result.data.osmtags.name;
-            let region = result.data.osmtags.is_in_state_code;
-
-            // assigned lat, long, region, and city to request
-            request.body.region = region;
-            request.body.city = city;
-console.log(city + " " + region);
-               
-       
-            // console.log("From lat/long: " + city + " " + region);
-            next();
-
-        }).catch(error => {
-            response.status(400).send({
-                message: "lat/long to city name API Error",
-                error: error
-            })
-        });
 }
 
 module.exports = router;
