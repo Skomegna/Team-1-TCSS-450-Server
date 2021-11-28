@@ -147,68 +147,34 @@ router.get("/:location?", (request, response, next) => {
         if (isStringProvided(lat) && isStringProvided(long)
             && !isNaN(lat) && !isNaN(long)) {
 
-            let url = "https://geocode.xyz/" + lat + "," + long 
-                    + "?json=1&auth=" + process.env.location_API_Key;
-            fetch(url, {
-                method: "GET",
-                headers: {"Content-type": "application/json;charset=UTF-8"}
-            })
-            .then(response => response.json()) 
-            .then(response => {
-console.log(response);
-                let city = response.city; 
-                let region = response.state;
-    
-                // assigned lat, long, region, and city to request
-                request.body.coordinates = {
-                    "lat": lat,
-                    "long": long,
-                    "region": region,
-                    "city": city
-                };
+            const params = {
+                auth: locationApiKey,
+                locate: lat + "," + long,
+                json: '1'
+            }
 
-                next();
-            }) 
-            .catch(error => {
-console.log(err);
-                response.status(400).send({
-                            message: "lat/long to city name API Error",
-                            error: error
-                });
-            });
+            axios.get(locationAPIurl, { params })
+                .then(response => {
 
+                    let city = response.data.city; 
+                    city = city[0] + city.substring(1).toLowerCase();
+                    let region = response.data.state;
 
+                    // assigned lat, long, region, and city to request
+                    request.body.coordinates = {
+                        "lat": lat,
+                        "long": long,
+                        "region": region,
+                        "city": city
+                    };
+                    next();
 
-
-
-            // // const axios = require('axios');
-            // const params = {
-            //     auth: locationApiKey,
-            //     locate: lat + "," + long,
-            //     json: '1'
-            // }
-
-            // axios.get(locationAPIurl, { params })
-            //     .then(response => {
-
-            //         let city = response.data.city; 
-            //         let region = response.data.state;
-
-            //         // assigned lat, long, region, and city to request
-            //         request.body.coordinates = {
-            //             "lat": lat,
-            //             "long": long,
-            //             "region": region,
-            //             "city": city
-            //         };
-
-        
-                // }).catch(error => {
-                //     response.status(400).send({
-                //         message: "lat/long to city name API Error",
-                //         error: error
-                //     })
-                // })
+                }).catch(error => {
+                    response.status(400).send({
+                        message: "lat/long to city name API Error",
+                        error: error
+                    })
+                })
 
         } else {
             response.status(400).send({
@@ -216,7 +182,7 @@ console.log(err);
             });
         };
     } else {   
-        // if passed zip code, it retrives lat, lang, city, and region
+        // if passed zip code, it retreives lat, lang, city, and region
         let zipCode = request.params.location;
 
         // checking if zip code is exact 5 digits
@@ -232,14 +198,13 @@ console.log(err);
                 region: 'US',
                 json: '1'
             }
-            const axios = require('axios');
-            console.log(axios);
             axios.get(locationAPIurl, { params })
                 .then(response => {
                     // assign the weather data to request.body
                     let lat = response.data.latt;
                     let long = response.data.longt;
                     let city = response.data.standard.city;
+                    city = city[0] + city.substring(1).toLowerCase();
                     let region = response.data.standard.region;
 
                     request.body.coordinates = {
