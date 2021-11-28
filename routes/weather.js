@@ -147,35 +147,67 @@ router.get("/:location?", (request, response, next) => {
         if (isStringProvided(lat) && isStringProvided(long)
             && !isNaN(lat) && !isNaN(long)) {
 
-            // const axios = require('axios');
-            const params = {
-                auth: locationApiKey,
-                locate: lat + "," + long,
-                json: '1'
-            }
+            let url = "https://geocode.xyz/" + lat + "," + long 
+                    + "?json=1&auth=" + process.env.location_API_Key;
+            fetch(url, {
+                method: "GET",
+                headers: {"Content-type": "application/json;charset=UTF-8"}
+            })
+            .then(response => response.json()) 
+            .then(response => {
+                // console.log(response);
+                let city = response.city; 
+                let region = response.state;
+    
+                // assigned lat, long, region, and city to request
+                request.body.coordinates = {
+                    "lat": lat,
+                    "long": long,
+                    "region": region,
+                    "city": city
+                };
 
-            axios.get(locationAPIurl, { params })
-                .then(response => {
+                next();
+            }) 
+            .catch(err => {
+                response.status(400).send({
+                            message: "lat/long to city name API Error",
+                            error: error
+                });
+            });
 
-                    let city = response.data.city; 
-                    let region = response.data.state;
 
-                    // assigned lat, long, region, and city to request
-                    request.body.coordinates = {
-                        "lat": lat,
-                        "long": long,
-                        "region": region,
-                        "city": city
-                    };
 
-                    next();
 
-                }).catch(error => {
-                    response.status(400).send({
-                        message: "lat/long to city name API Error",
-                        error: error
-                    })
-                })
+
+            // // const axios = require('axios');
+            // const params = {
+            //     auth: locationApiKey,
+            //     locate: lat + "," + long,
+            //     json: '1'
+            // }
+
+            // axios.get(locationAPIurl, { params })
+            //     .then(response => {
+
+            //         let city = response.data.city; 
+            //         let region = response.data.state;
+
+            //         // assigned lat, long, region, and city to request
+            //         request.body.coordinates = {
+            //             "lat": lat,
+            //             "long": long,
+            //             "region": region,
+            //             "city": city
+            //         };
+
+        
+                // }).catch(error => {
+                //     response.status(400).send({
+                //         message: "lat/long to city name API Error",
+                //         error: error
+                //     })
+                // })
 
         } else {
             response.status(400).send({
@@ -199,7 +231,8 @@ router.get("/:location?", (request, response, next) => {
                 region: 'US',
                 json: '1'
             }
-
+            const axios = require('axios');
+            console.log(axios);
             axios.get(locationAPIurl, { params })
                 .then(response => {
                     // assign the weather data to request.body
@@ -244,6 +277,7 @@ router.get("/:location?", (request, response, next) => {
     })
         .then(response => response.json())
         .then(data => {
+console.log(data);
             // assign the weather data to request.body
             request.body.data = data;
             next();
