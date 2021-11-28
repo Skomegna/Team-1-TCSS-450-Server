@@ -12,7 +12,7 @@
 
 //express is the framework we're going to use to handle requests
 const fetch = require('node-fetch');
-const axios = require('axios').default;
+const axios = require('axios');
 
 const express = require('express');
 const router = express.Router();
