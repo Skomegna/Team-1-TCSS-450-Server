@@ -12,7 +12,7 @@
 
 //express is the framework we're going to use to handle requests
 const fetch = require('node-fetch');
-const axios = require('axios');
+const axios = require('axios').default;
 
 const express = require('express');
 const router = express.Router();
@@ -145,7 +145,7 @@ router.get("/:location?", (request, response, next) => {
         if (isStringProvided(lat) && isStringProvided(long)
             && !isNaN(lat) && !isNaN(long)) {
 
-            const axios = require('axios');
+            // const axios = require('axios');
             const params = {
                 auth: locationApiKey,
                 locate: lat + "," + long,
