@@ -155,7 +155,7 @@ router.get("/:location?", (request, response, next) => {
             })
             .then(response => response.json()) 
             .then(response => {
-                // console.log(response);
+console.log(response);
                 let city = response.city; 
                 let region = response.state;
     
@@ -169,7 +169,8 @@ router.get("/:location?", (request, response, next) => {
 
                 next();
             }) 
-            .catch(err => {
+            .catch(error => {
+console.log(err);
                 response.status(400).send({
                             message: "lat/long to city name API Error",
                             error: error
@@ -277,7 +278,6 @@ router.get("/:location?", (request, response, next) => {
     })
         .then(response => response.json())
         .then(data => {
-console.log(data);
             // assign the weather data to request.body
             request.body.data = data;
             next();
