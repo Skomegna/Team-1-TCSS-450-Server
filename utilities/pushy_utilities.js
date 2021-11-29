@@ -35,8 +35,8 @@ function sendNewContactRequestNotif(token, toMemberId, fromMemberId,
                                     fromNickname) {
     const data = {
         "type": "newContactRequest",
-        "toId": toMemberId,
-        "fromId": fromMemberId,
+        "toId": toMemberId.toString(),
+        "fromId": fromMemberId.toString(),
         "fromNickname": fromNickname
     };
 
@@ -52,9 +52,9 @@ function sendContactRequestResponseNotif(token, toMemberId, fromMemberId,
                                          fromNickname, isAccept) {
     const data = {
         "type": "contactRequestResponse",
-        "toId": toMemberId,
-        "fromId": fromMemberId,
-        "fromNickname": fromNickname,
+        "toId": toMemberId.toString(),
+        "fromId": fromMemberId.toString(),
+        "fromNickname": fromNickname.toString(),
         "isAccept":  isAccept
     };
     sendPushy(token, data);                                      
@@ -69,9 +69,9 @@ function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId,
                                   deleterNickname) {
     const data = {
         "type": "contactDeleted",
-        "deletedId": deletedMemberId,
-        "deletorId": deleterMemberId,
-        "fromNickname": deleterNickname,   
+        "deletedId": deletedMemberId.toString(),
+        "deletorId": deleterMemberId.toString(),
+        "fromNickname": deleterNickname.toString(),   
     };
     sendPushy(token, data);                                      
 }
