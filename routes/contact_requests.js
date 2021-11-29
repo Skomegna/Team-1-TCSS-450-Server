@@ -439,6 +439,23 @@ router.put('/', (request, response, next) => {
                     detail: err.detail
                 });
             });   
+}, (request, response, next) => {
+    // get the nickname of the user who sent this user this request
+    let query = `SELECT nickname FROM Members WHERE memberid=$1`;
+    let values = [request.body.memberID];
+
+    pool.query(query, values) 
+        .then(result => {
+            request.body.otherMemberNickname = result.rows[0].nickname;
+            next();
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                detail: err.detail
+            });
+        })
+
 }, (request, response) => {
     
     // everything was deleted successfully, so send pushy notifying the
@@ -449,13 +466,12 @@ router.put('/', (request, response, next) => {
     
     pool.query(query, values)
         .then(result => {
-
             result.rows.forEach(entry =>  
                 sendContactRequestResponseNotif(
                     entry.token,
-                    request.body.memberID,
                     request.decoded.memberid, 
-                    request.decoded.nickname,
+                    request.body.memberID,
+                    request.body.otherMemberNickname,
                     request.body.isAccepting
                 ));
 
