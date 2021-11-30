@@ -173,7 +173,7 @@ router.post('/', (request, response, next) => {
     // insert the new location into the database
     let lat = request.body.lat;
     let long = request.body.long;
-    console.log(request.decoded.memberid);
+
     
     let query = `INSERT INTO Locations(MemberId, Lat, Long)
                  VALUES ($1, $2, $3)`;
@@ -217,16 +217,27 @@ function addLatLong(request, response, next) {
 
         axios.get(locationAPIurl, { params })
             .then(response => {
-                // assign the retrieved lat and long to the body
+                
+                // assign the retrieved lat and long to the body)
                 request.body.lat = response.data.latt;
                 request.body.long = response.data.longt;
-                next();
 
+                // check to make sure that the given zipcode 
+                // produced valid lat/longs
+                // note: a zipcode that results in lat:0  long:0 will be marked as invalid
+                
+                if (request.body.lat == 0 && request.body.long == 0) {
+                    // causes the catch block to run
+                    throw err;
+                } else {
+                    next();
+                }
+                
             }).catch(error => {
                 response.status(400).send({
                     message: "ZIP to lat/lon API Error",
                     error: error
-                })
+                });
             });
     }
 }
