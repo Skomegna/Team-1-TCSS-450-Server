@@ -122,6 +122,8 @@ router.get('/', (request, response) => {
                                        for a particular user 
  * @apiError (400: Invalid ZipCode) {String} message 
                                        "Malformed parameter. Zip Code must be five digits"
+ *
+ * @apiError (400: Duplicate Location) {String} message "Location already exists"                               
  * 
  * @apiUse SQLError
  */
@@ -168,6 +170,26 @@ router.post('/', (request, response, next) => {
             message: "Missing required information"
         });
     }
+}, (request, response, next) => {
+    // check to make sure that the given lat/long are 
+    // not already present in the database.
+    let query = `SELECT * FROM Locations WHERE Lat=$1 AND Long=$2`;
+    let values = [request.body.lat, request.body.long];
+    
+    pool.query(query, values)
+        .then(result => {
+            if (result.rowCount == 0) {
+                // continue if the lat/long does not exist
+                next();
+            } else {
+                // throw an error if the lat/long exists.
+                throw err;
+            }
+        }).catch(error => {
+            response.status(400).send({
+                message: "Location already exists",
+            });
+        })
 }, (request, response) => {
     
     // insert the new location into the database
