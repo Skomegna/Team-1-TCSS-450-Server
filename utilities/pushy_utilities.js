@@ -62,8 +62,8 @@ function sendContactRequestResponseNotif(token, toMemberId, fromMemberId,
 
 
 /*
- * Sends a contact  notification to a specific client specified by the token 
- * notifying that someone deleted their contact
+ * Sends a contact request delete notification to a specific client specified by the token 
+ * notifying that someone deleted their contact request
  */
 function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId, 
                                   deleterNickname) {
