@@ -472,4 +472,95 @@ router.put('/', (request, response, next) => {
 });
 
 
+/**
+ * @api {delete} /contacts/requests/:contactID?/ Request to delete an outgoing contact request
+ * @apiName DeleteOutgoingContactRequest
+ * @apiGroup Contacts/Requests
+ * 
+ * @apiDescription Deletes the outgoing contact request that connects the two members
+                   specified by the given contactID and 
+                   the ID of the request sender.
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ *
+ * @apiParam {Number} contactID the memberID of the contact to be deleted
+ * 
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "contactId": 2343,
+ *     }
+ * 
+ * @apiSuccess {boolean} success true when the list is created and sent 
+ * 
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * 
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
+ *
+ * @apiUse SQLError
+ * 
+ * @apiUse PushError
+ */
+ router.delete('/:contactId/', (request, response, next) => {
+    // ensure the contactId is given and is a number
+    if (!request.params.contactId) {
+        response.status(400).send({
+            message: "Missing required information"
+        });
+    } else if (isNaN(request.params.contactId)){
+        response.status(400).send({
+            message: "Malformed parameter. contactId must be a number"
+        });
+    } else {
+        next();
+    }
+
+ }, (request, response, next) => {
+    // no need to check if the contactId is valid. Just go through the 
+    // database and delete if if we see it. 
+
+    let query = `DELETE FROM Contact_Requests WHERE
+                 MemberID_A=$2 AND MemberID_B=$1`
+    let values = [request.body.memberID, request.decoded.memberid];
+
+    pool.query(query, values)
+        .then(result => {
+            // contacts deleted, so send notifs that 
+            // contacts list may have changed
+            next(); 
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                error: error
+            });
+        });
+ }, (request, response) => {
+    // successfully deleted the contacts if they existed, send success
+    let query = `SELECT token FROM Push_Token
+                 WHERE MemberId=$1 OR MemberId=$2`;
+    let values = [request.decoded.memberid, request.params.contactId];
+    pool.query(query, values)
+        .then(result => {
+
+            result.rows.forEach(entry =>  
+                sendContactDeletionNotif(
+                    entry.token,
+                    request.params.contactId,
+                    request.decoded.memberid,
+                    request.decoded.nickname
+                ));
+
+            response.send({
+                success: true
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
+            });
+        });
+ });
+
+
 module.exports = router;
