@@ -76,6 +76,20 @@ function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId,
     sendPushy(token, data);                                      
 }
 
+
+/*
+ * Sends a contact  notification to a specific client specified by the token 
+ * notifying that someone deleted their contact
+ */
+function sendContactRequestDeletionNotif(token, deletedMemberId, deleterMemberId) {
+    const data = {
+        "type": "contactRequestDeleted",
+        "deletedId": deletedMemberId.toString(),
+        "deletorId": deleterMemberId.toString(),  
+    };
+    sendPushy(token, data);                                      
+}
+
 /* 
  * Sends a pushy notification to the account corresponding to the given token
  * that includes the given data
@@ -99,5 +113,6 @@ module.exports = {
     sendMessageToIndividual,
     sendNewContactRequestNotif, 
     sendContactRequestResponseNotif, 
-    sendContactDeletionNotif
+    sendContactDeletionNotif,
+    sendContactRequestDeletionNotif
 }
