@@ -521,7 +521,7 @@ router.put('/', (request, response, next) => {
 
     let query = `DELETE FROM Contact_Requests WHERE
                  MemberID_A=$2 AND MemberID_B=$1`
-    let values = [request.body.memberID, request.decoded.memberid];
+    let values = [request.params.contactId, request.decoded.memberid];
 
     pool.query(query, values)
         .then(result => {
