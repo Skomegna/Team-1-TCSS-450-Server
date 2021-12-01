@@ -1,6 +1,7 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+
  * 
  * Contains helper functions that can be inserted in 
  * endpoint function chains that check the validity of given parameters
@@ -46,6 +47,7 @@ function checkEmail(request, response, next) {
 
 }
 
+
 /**
  * Given recive user's password stored at request.body.password, 
  * will sent 400 errors if the password contains less than 8 characters, 
@@ -58,6 +60,7 @@ function checkPassword(request, response, next) {
     const userPassword = request.body.password;
 
     var specialCharacterRegex = new RegExp(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/);
+
     var letterRegex = /[a-zA-Z]/;
     var digitRegex = /[0-9]/;
 
@@ -89,6 +92,7 @@ function checkPassword(request, response, next) {
         next();
     }
 }
+
 
 /**
  * Given the user's first name, last name, and nickname stored at 
