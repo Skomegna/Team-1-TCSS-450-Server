@@ -20,7 +20,7 @@ let isStringProvided = validation.isStringProvided;
 
 /**
  * @api {get} /chat_members/:chatId? Request to get chat members list 
- * @apiName Getchat_members
+ * @apiName GetChatMembers
  * @apiGroup Chats
  * 
  * @apiDescription Request to get a list of all participants from the requested chat ID.
