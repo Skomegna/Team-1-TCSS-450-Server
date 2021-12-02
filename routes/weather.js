@@ -155,7 +155,6 @@ router.get("/:location?", (request, response, next) => {
 
             axios.get(locationAPIurl, { params })
                 .then(response => {
-
                     let city = response.data.city; 
                     city = city[0] + city.substring(1).toLowerCase();
                     let region = response.data.state;
@@ -200,6 +199,7 @@ router.get("/:location?", (request, response, next) => {
             }
             axios.get(locationAPIurl, { params })
                 .then(response => {
+                    console.log(response.data);
                     // assign the weather data to request.body
                     let lat = response.data.latt;
                     let long = response.data.longt;
