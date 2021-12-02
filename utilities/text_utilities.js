@@ -1,67 +1,91 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+
+ * 
+ * Contains helper functions that can be inserted in 
+ * endpoint function chains that check the validity of given parameters
+ * including email, password, first name, last name, and nickname.
  */
 
-// NOTE: THIS FILE SHOULD NOT BE USED. IT SHOULD BE REPLACED
-// WITH THE UPDATED VERSION FROM CHRIS 
 
 /**
- * recive user's email from server, set up two regex to compare for 
- * at sign and white space, if at sign is missing or 
+ * Given recive user's email stored at request.body.email, 
+ * will sent 400 errors if the email is not at least 3 characters, 
+ * contains whitespace, or does not have an '@' symbol. If all 
+ * requirements are met, move onto the next function.
  */
 function checkEmail(request, response, next) {
-console.log("in checkEmail");
     const userEmail = (request.body.email);
     
     var atSignRegex = /@/;
     var whiteSpaceRegex = /\s/;
     var atSignChecker = userEmail.match(atSignRegex);
     var whiteSpaceChecker = userEmail.match(whiteSpaceRegex);
-    
-    if(userEmail.length <= 3) {
-        //alert?
+
+    if(userEmail.length < 3) {
         response.status(400).send({
-            message: "Email must longer than 3 digits"
+            message: "Invalid Parameter",
+            detail: "Email must have at least 3 digits"
         });
     } 
     else if(atSignChecker == null) {
         response.status(400).send({
-            message: "Email must must contain @"
+            message: "Invalid Parameter",
+            detail: "Email must contain @ symbol"
         });
     } 
-    else if(whiteSpaceChecker == null) {
+    else if(whiteSpaceChecker != null) {
         response.status(400).send({
-            message: "Email must have no whitespace "
+            message: "Invalid Parameter",
+            detail: "Email must have no whitespace"
         });
-    } 
-    //should it be next?
+    }
     else { 
         next();
     }
 
 }
 
+
+/**
+ * Given recive user's password stored at request.body.password, 
+ * will sent 400 errors if the password contains less than 8 characters, 
+ * the password does not have at least one special character, 
+ * the password does not contain at least 1 digit or
+ * the password does not contain at least one letter. 
+ * If all requirements are met, move onto the next function.
+ */
 function checkPassword(request, response, next) {
     const userPassword = request.body.password;
 
     var specialCharacterRegex = new RegExp(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/);
-    var digitLetterRegex = /\w+/;
+
+    var letterRegex = /[a-zA-Z]/;
+    var digitRegex = /[0-9]/;
 
     if(userPassword.length < 8) {
         response.status(400).send({
-            message: "Password must be longer than or equal to 8 digit"
+            message: "Invalid Parameter",
+            detail: "Password must have at least 8 characters"
         });
     }
-    else if(userPassword.test(specialCharacterRegex) == null) {
+    else if(userPassword.match(specialCharacterRegex) == null) {
         response.status(400).send({
-            message: "Password must contain at least one special character"
+            message: "Invalid Parameter",
+            detail: "Password must contain at least one special character"
         });
     }
-
-    else if(userPassword.test(digitLetterRegex) == null) {
+    else if(userPassword.match(letterRegex) == null) {
         response.status(400).send({
-            message: "Password must contain at least 1 digit or letter"
+            message: "Invalid Parameter",
+            detail: "Password must contain at least 1 letter"
+        });
+    }
+    else if(userPassword.match(digitRegex) == null) {
+        response.status(400).send({
+            message: "Invalid Parameter",
+            detail: "Password must contain at least 1 digit"
         });
     }
     else { 
@@ -69,21 +93,40 @@ function checkPassword(request, response, next) {
     }
 }
 
+
+/**
+ * Given the user's first name, last name, and nickname stored at 
+ * request.body.first, request.body.last, and request.body.nickname 
+ * respectively, sends a 400 error if any of the fields are less than 
+ * 2 characters. If all Strings pass, move onto the next function.
+ */
 function checkNames(request, response, next) {
     const userFirstName = request.body.first;
     const userLastName = request.body.last;
     const userNickname = request.body.nickname;
 
-    if(userFirstName.length < 2
-        ||userLastName.length < 2
-        ||userNickname.length < 2 ) {
-            response.status(400).send({
-                message: "It must be longer than 1 digits"
-            });
-        }
-        else {
-            next();
-        }
+    if(userFirstName.length < 2) {
+        response.status(400).send({
+            message: "Invalid Parameter",
+            detail: "First name must have at least 2 digits"
+        });
+        
+    }
+    else if(userLastName.length < 2) {
+        response.status(400).send({
+            message: "Invalid Parameter",
+            detail: "Last name must have at least 2 digits"
+        });
+    }
+    else if(userNickname.length < 2 ) {
+        response.status(400).send({
+            message: "Invalid Parameter",
+            detail: "Nickname must have at least 2 digits"
+        });
+    }
+    else {
+        next();
+    }
 }
 
 module.exports = {
