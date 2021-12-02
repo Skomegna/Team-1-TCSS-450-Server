@@ -16,6 +16,10 @@ const generateSalt = require('../utilities').generateSalt;
 
 const router = express.Router();
 
+const textUtils = require('../utilities').textUtils;
+const checkEmail = textUtils.checkEmail;
+const checkPassword = textUtils.checkPassword;  
+
 /**
  * @api {put} /password/reset Request to reset one's password
  * @apiName PasswordReset
@@ -47,6 +51,9 @@ const router = express.Router();
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
+ * @apiError (400: Invalid Parameter) {String} message "Invalid Parameter"
+ * @apiError (400: Invalid Parameter) {String} detail  What is wrong about the given param 
+ * 
  * @apiError (400: Invalid Email) {String} message "Email does not exist
  * 
  * @apiError (400: Invalid Code) {String} message "Code is not valid"
@@ -63,9 +70,11 @@ router.put('/', (request, response, next) => {
             message: "Missing required information"
         });
     } else {
+        // place the new password at request.body.password so we can check it
+        request.body.password = request.body.newPassword;
         next();
     }
-}, (request, response, next) => {
+}, checkEmail, checkPassword, (request, response, next) => {
     // the user will always have a verification code in the code table
     // if they make this request, so we can check to see if the email 
     // and code is valid in a single sql query

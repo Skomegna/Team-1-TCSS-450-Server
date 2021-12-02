@@ -27,6 +27,11 @@ const sendEmail = require('../utilities').sendEmail;
 
 const router = express.Router();
 
+const textUtils = require('../utilities').textUtils;
+const checkEmail = textUtils.checkEmail;
+const checkPassword = textUtils.checkPassword;  
+const checkNames = textUtils.checkNames;
+
 
 /**
  * @api {post} /auth Request to register a user
@@ -63,6 +68,10 @@ const router = express.Router();
  *     }
  * 
  * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ *
+ * @apiError (400: Invalid Parameter) {String} message "Invalid Parameter"
+ * @apiError (400: Invalid Parameter) {String} detail  Explanation of what's 
+                                                       wrong with the parametere
  * 
  * @apiError (400: Username exists) {String} message "Username exists"
  * 
@@ -96,7 +105,9 @@ router.post('/', (request, response, next) => {
         });
     }
 
-}, checkNickname, (request, response, next) => {
+}, checkNickname, checkNames, checkEmail, checkPassword,
+    (request, response, next) => {
+
     //Retrieve data from query params
     const first = request.body.first;
     const last = request.body.last;
