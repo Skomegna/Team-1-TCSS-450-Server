@@ -16,6 +16,10 @@ const generateHash = require('../utilities').generateHash;
 
 const router = express.Router();
 
+const textUtils = require('../utilities').textUtils;
+const checkEmail = textUtils.checkEmail;
+const checkPassword = textUtils.checkPassword;  
+
 //Pull in the JWT module along with out a secret key
 const jwt = require('jsonwebtoken');
 const config = {
@@ -49,6 +53,10 @@ const config = {
  * 
  * @apiError (400: Malformed Authorization Header) {String} message "Malformed Authorization Header"
  * 
+ * @apiError (400: Invalid Parameter) {String} message "Invalid Parameter"
+ * @apiError (400: Invalid Parameter) {String} detail  Explanation of what's 
+                                                       wrong with the parametere
+ * 
  * @apiError (404: User Not Found) {String} message "User not found"
  * 
  * @apiError (400: Invalid Credentials) {String} message "Credentials did not match"
@@ -73,6 +81,8 @@ router.get('/', (request, response, next) => {
     const [email, password] = credentials.split(':');
 
     if (isStringProvided(email) && isStringProvided(password)) {
+        request.body.email = email;
+        request.body.password = password;
         request.auth = { 
             "email" : email,
             "password" : password
@@ -83,7 +93,7 @@ router.get('/', (request, response, next) => {
             message: "Malformed Authorization Header"
         });
     };
-}, (request, response) => {
+}, checkEmail, checkPassword, (request, response) => {
     const theQuery = "SELECT Password, Salt, MemberId, FirstName, LastName,"
             + "Nickname, Verification FROM Members WHERE Email=$1";
     const theEmail = (request.auth.email).toLowerCase();

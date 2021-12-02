@@ -32,6 +32,8 @@ app.use('/auth/resendcode', require('./routes/resend_code.js'));
 
 app.use('/password/reset', require('./routes/password_reset'));
 
+app.use('/password/change', middleware.checkToken, require('./routes/password_change'));
+
 app.use('/weather/locations', middleware.checkToken, require('./routes/locations.js'));
 
 app.use('/weather', middleware.checkToken, require('./routes/weather.js'));
