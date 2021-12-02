@@ -35,8 +35,8 @@ function sendNewContactRequestNotif(token, toMemberId, fromMemberId,
                                     fromNickname) {
     const data = {
         "type": "newContactRequest",
-        "toId": toMemberId,
-        "fromId": fromMemberId,
+        "toId": toMemberId.toString(),
+        "fromId": fromMemberId.toString(),
         "fromNickname": fromNickname
     };
 
@@ -52,10 +52,26 @@ function sendContactRequestResponseNotif(token, toMemberId, fromMemberId,
                                          fromNickname, isAccept) {
     const data = {
         "type": "contactRequestResponse",
-        "toId": toMemberId,
-        "fromId": fromMemberId,
-        "fromNickname": fromNickname,
+        "toId": toMemberId.toString(),
+        "fromId": fromMemberId.toString(),
+        "fromNickname": fromNickname.toString(),
         "isAccept":  isAccept
+    };
+    sendPushy(token, data);                                      
+}
+
+
+/*
+ * Sends a contact request delete notification to a specific client specified by the token 
+ * notifying that someone deleted their contact request
+ */
+function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId, 
+                                  deleterNickname) {
+    const data = {
+        "type": "contactDeleted",
+        "deletedId": deletedMemberId.toString(),
+        "deletorId": deleterMemberId.toString(),
+        "fromNickname": deleterNickname.toString(),   
     };
     sendPushy(token, data);                                      
 }
@@ -65,13 +81,11 @@ function sendContactRequestResponseNotif(token, toMemberId, fromMemberId,
  * Sends a contact  notification to a specific client specified by the token 
  * notifying that someone deleted their contact
  */
-function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId, 
-                                  deleterNickname) {
+function sendContactRequestDeletionNotif(token, deletedMemberId, deleterMemberId) {
     const data = {
-        "type": "contactDeleted",
-        "deletedId": deletedMemberId,
-        "deletorId": deleterMemberId,
-        "fromNickname": deleterNickname,   
+        "type": "contactRequestDeleted",
+        "deletedId": deletedMemberId.toString(),
+        "deletorId": deleterMemberId.toString(),  
     };
     sendPushy(token, data);                                      
 }
@@ -99,5 +113,6 @@ module.exports = {
     sendMessageToIndividual,
     sendNewContactRequestNotif, 
     sendContactRequestResponseNotif, 
-    sendContactDeletionNotif
+    sendContactDeletionNotif,
+    sendContactRequestDeletionNotif
 }

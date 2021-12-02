@@ -16,6 +16,8 @@ const validation = require('./validation_utilities.js');
 
 const weatherChecker = require('./weatherHelper.js');
 
+const textUtils = require('./text_utilities.js');
+
 // database tools
 const database = require('./database_utilities.js');
 
@@ -25,5 +27,13 @@ const sendEmail = require('./email.js').sendEmail;
 let pushyTools = require('./pushy_utilities.js')
 
 module.exports = { 
-    pool, generateHash, generateSalt, validation, database, sendEmail, weatherChecker, pushyTools
+    pool, 
+    generateHash, 
+    generateSalt, 
+    validation, 
+    database, 
+    sendEmail,
+    weatherChecker, 
+    pushyTools, 
+    textUtils
 };

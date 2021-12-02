@@ -26,6 +26,7 @@ const addMemberID = databaseUtils.addMemberID;
 const push_tools = require('../utilities/exports').pushyTools;
 const sendNewContactRequestNotif = push_tools.sendNewContactRequestNotif;
 const sendContactRequestResponseNotif = push_tools.sendContactRequestResponseNotif;
+const sendContactRequestDeletionNotif = push_tools.sendContactRequestDeletionNotif;
 
 // validation tools
 let isStringProvided = validation.isStringProvided;
@@ -228,30 +229,29 @@ router.post('/', (request, response, next) => {
 
 
 
-
-
-
-
-
 /**
- * @api {get} /contacts/requests Request to recieve all contact requests an account has been sent.
+ * @api {get} /contacts/requests Request to recieve all contact requests an
+                                 account has been sent and has sent.
  * @apiName GetContactRequest
  * @apiGroup Contacts/Requests
  * 
- * @apiDescription Responds with a list of contact requests that have 
-                   been sent to the account that corresponds to the request sender.
+ * @apiDescription Responds with two arrays, one containing the sent contact 
+                   requests and the other containing sent recieved
+                   contact requests for a particular account.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
  * @apiSuccess (Success 201) {boolean} success 
         true when the list of contact requests has been created and sent
- * @apiSuccess (Success 201) {array} data 
+ * @apiSuccess (Success 201) {array} receivedRequests
         an array of contact's information that sent you a request
+ * @apiSuccess (Success 201) {array} sentRequests
+        an array of contact's information that you send a request to
  *
  * @apiSuccessExample {json} Response-Success-Example:
  *  {
  *      "success":true,
- *      "data":[
+ *      "receivedRequests":[
  *          {
  *              "memberid":"42",
  *              "first":"Charles",
@@ -264,6 +264,20 @@ router.post('/', (request, response, next) => {
  *              "last":"Attaway",
  *              "nickname": "AustnSauce"
  *          }
+ *      ],
+ *      "sentRequests":[
+ *          {
+ *              "memberid":"42",
+ *              "first":"Charles",
+ *              "last":"Bryan",
+ *              "nickname": "Big C"
+ *          }, 
+ *          {
+ *              "memberid":"234",
+ *              "first":"John",
+ *              "last":"Kennedy",
+ *              "nickname": "RealJohnKennedy"
+ *          }
  *      ]
  *  }
  *
@@ -274,19 +288,47 @@ router.post('/', (request, response, next) => {
  */
 router.get('/', (request, response, next) => {
     // note: the JWT has already been checked by this point, 
-    // so we can go straight into trying to get all requests
-    // from the database
+    // so we can go straight into trying to get all the requests
+    // that were sent to this user from the database
 
-    let query = `SELECT * FROM Contact_Requests WHERE MemberID_B=$1`;
+    let query = `SELECT MemberID_A FROM Contact_Requests WHERE MemberID_B=$1`;
+    let values = [request.decoded.memberid];
+    pool.query(query, values)
+        .then(result => {
+            
+            let resultRows = [];
+            result.rows.forEach(row => resultRows.push(row.memberid_a));
+
+            request.body.memberIDs = resultRows;
+            next();
+    
+        })
+        .catch(err => {
+            // an sql error occurred while trying to 
+            response.status(400).send({
+                message: "SQL Error",
+                error: err
+            });
+        });
+
+}, getContactInfo, (request, response, next) => {
+    // at this point request.body.contactInfoList will contain the contact
+    // information for the users who sent the requester's account
+    // a contact request. 
+    request.body.receivedRequestContacts = request.body.contactInfoList;
+    
+    
+    // get the member Ids for the contacts who this
+    // account has sent a request to
+    let query = `SELECT MemberID_B FROM Contact_Requests WHERE MemberID_A=$1`;
     let values = [request.decoded.memberid];
 
     pool.query(query, values)
         .then(result => {
             
-            let resultRows = new Array(result.rowCount);
-            for (let i = 0; i < result.rowCount; i++) {
-                resultRows[i] = result.rows[i].memberid_a;
-            }
+            let resultRows = [];
+            result.rows.forEach(row => resultRows.push(row.memberid_b));
+            
             request.body.memberIDs = resultRows;
             next();
     
@@ -300,11 +342,14 @@ router.get('/', (request, response, next) => {
         });
 
 }, getContactInfo, (request, response) => {
-    // getContactInfo will put the response 
-    // data at request.body.contactInfoList
+    // request.body.contactInfoList contains the contact info for 
+    // the contacts that have been sent requests from this user
+    request.body.sentRequestContacts = request.body.contactInfoList;
+
     response.status(201).send({
         success: true,
-        data: request.body.contactInfoList
+        receivedRequests: request.body.receivedRequestContacts,
+        sentRequests: request.body.sentRequestContacts
     });
 });
 
@@ -470,6 +515,96 @@ router.put('/', (request, response, next) => {
             });
         });
 });
+
+
+/**
+ * @api {delete} /contacts/requests/:contactID?/ Request to delete an outgoing contact request
+ * @apiName DeleteOutgoingContactRequest
+ * @apiGroup Contacts/Requests
+ * 
+ * @apiDescription Deletes the outgoing contact request that connects the two members
+                   specified by the given contactID and 
+                   the ID of the request sender.
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ *
+ * @apiParam {Number} contactID the memberID of the contact to be deleted
+ * 
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "contactId": 2343,
+ *     }
+ * 
+ * @apiSuccess {boolean} success true when the list is created and sent 
+ * 
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * 
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
+ *
+ * @apiUse SQLError
+ * 
+ * @apiUse PushError
+ */
+ router.delete('/:contactId/', (request, response, next) => {
+    // ensure the contactId is given and is a number
+    if (!request.params.contactId) {
+        response.status(400).send({
+            message: "Missing required information"
+        });
+    } else if (isNaN(request.params.contactId)){
+        response.status(400).send({
+            message: "Malformed parameter. contactId must be a number"
+        });
+    } else {
+        next();
+    }
+
+ }, (request, response, next) => {
+    // no need to check if the contactId is valid. Just go through the 
+    // database and delete if if we see it. 
+
+    let query = `DELETE FROM Contact_Requests WHERE
+                 MemberID_A=$2 AND MemberID_B=$1`
+    let values = [request.params.contactId, request.decoded.memberid];
+
+    pool.query(query, values)
+        .then(result => {
+            // contact requests deleted, so send notifs that 
+            // contacts list may have changed
+            next(); 
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                error: error
+            });
+        });
+ }, (request, response) => {
+    // successfully deleted the contact requests if they existed, send success
+    let query = `SELECT token FROM Push_Token
+                 WHERE MemberId=$1 OR MemberId=$2`;
+    let values = [request.decoded.memberid, request.params.contactId];
+    pool.query(query, values)
+        .then(result => {
+
+            result.rows.forEach(entry =>  
+                sendContactRequestDeletionNotif(
+                    entry.token,
+                    request.params.contactId,
+                    request.decoded.memberid
+                ));
+
+            response.send({
+                success: true
+            });
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
+            });
+        });
+ });
 
 
 module.exports = router;

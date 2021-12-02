@@ -56,7 +56,9 @@ const locationApiKey = process.env.location_API_Key;
  * @apiDescription Request to get current weather information for current, daily,
  * and hourly weather.
  * 
- * @apiParam {Number} location the zip code or lat/long to look up. 
+ * @apiParam {Number} location the zip code or lat/long to look up.
+                       The zipcode can be hardcoded into url, lat/long 
+                       should be hardcoded with a ':' between
  * 
  * @apiSuccess (Success 201) {boolean} success true if the data is given
  * @apiSuccess (Success 201) {Object}  currentData the JSON object 
@@ -145,7 +147,6 @@ router.get("/:location?", (request, response, next) => {
         if (isStringProvided(lat) && isStringProvided(long)
             && !isNaN(lat) && !isNaN(long)) {
 
-            const axios = require('axios');
             const params = {
                 auth: locationApiKey,
                 locate: lat + "," + long,
@@ -155,6 +156,7 @@ router.get("/:location?", (request, response, next) => {
             axios.get(locationAPIurl, { params })
                 .then(response => {
                     let city = response.data.city; 
+                    city = city[0] + city.substring(1).toLowerCase();
                     let region = response.data.state;
 
                     // assigned lat, long, region, and city to request
@@ -164,7 +166,6 @@ router.get("/:location?", (request, response, next) => {
                         "region": region,
                         "city": city
                     };
-                    
                     next();
 
                 }).catch(error => {
@@ -180,7 +181,7 @@ router.get("/:location?", (request, response, next) => {
             });
         };
     } else {   
-        // if passed zip code, it retrives lat, lang, city, and region
+        // if passed zip code, it retreives lat, lang, city, and region
         let zipCode = request.params.location;
 
         // checking if zip code is exact 5 digits
@@ -196,7 +197,6 @@ router.get("/:location?", (request, response, next) => {
                 region: 'US',
                 json: '1'
             }
-
             axios.get(locationAPIurl, { params })
                 .then(response => {
                     console.log(response.data);
@@ -204,6 +204,7 @@ router.get("/:location?", (request, response, next) => {
                     let lat = response.data.latt;
                     let long = response.data.longt;
                     let city = response.data.standard.city;
+                    city = city[0] + city.substring(1).toLowerCase();
                     let region = response.data.standard.region;
 
                     request.body.coordinates = {
@@ -250,7 +251,7 @@ router.get("/:location?", (request, response, next) => {
             response.status(400).send({
                 message: "Weather API Error",
                 error: error
-            })
+            });
         });
 }, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
 

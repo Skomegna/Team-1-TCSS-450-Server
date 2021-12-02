@@ -199,53 +199,58 @@ function addMemberID(request, response, next) {
  */ 
 function getContactInfo(request, response, next) {
 
+console.log("IDS:");
+console.log(request.body.memberIDs);
     let memberIDs = request.body.memberIDs;
 
     // if there aren't IDs, set request.body.contactInfoList 
     // to an empty array and move on.
     // and move onto next function
-    if (memberIDs.length == 0) {
+console.log(memberIDs.length);
+    if (memberIDs.length === 0) {
         request.body.contactInfoList = [];
         next();
-    }
-
-    let query = "SELECT (memberID, FirstName, LastName, Nickname) "
+    
+    } else {
+        let query = "SELECT (memberID, FirstName, LastName, Nickname) "
             + "FROM Members WHERE ";
-    for (let i = 0; i < memberIDs.length; i++) {
-        query += "memberID=" + memberIDs[i] + " OR ";
-    }
-    query = query.substring(0, query.length - 3);
+        for (let i = 0; i < memberIDs.length; i++) {
+            query += "memberID=" + memberIDs[i] + " OR ";
+        }
+        query = query.substring(0, query.length - 3);
+console.log(query);
+        
+        pool.query(query)
+            .then(result => {
+                // now that we have the raw data, format it
+                let rawData = result.rows;
+                const resultArr = [];
 
-    pool.query(query)
-        .then(result => {
-            // now that we have the raw data, format it
-            let rawData = result.rows;
-            const resultArr = [];
+                for (let i = 0; i < rawData.length; i++) {
+                    let rowString = rawData[i].row;
+                    rowString = rowString.substring(1, rowString.length - 1);
+                    let arr = rowString.split(',');
+                    
+                    let resultObj = {
+                        "memberid": arr[0],
+                        "first": arr[1],
+                        "last": arr[2],
+                        "nickname": arr[3]
+                    };
+                    resultArr[i] = resultObj;
+                }
 
-            for (let i = 0; i < rawData.length; i++) {
-                let rowString = rawData[i].row;
-                rowString = rowString.substring(1, rowString.length - 1);
-                let arr = rowString.split(',');
-                
-                let resultObj = {
-                    "memberid": arr[0],
-                    "first": arr[1],
-                    "last": arr[2],
-                    "nickname": arr[3]
-                };
-                resultArr[i] = resultObj;
-            }
-
-            request.body.contactInfoList = resultArr;
-            next();
-        })
-        .catch(err => {
-            // an sql error occurred 
-            response.status(400).send({
-                message: "SQL Error",
-                error: err
+                request.body.contactInfoList = resultArr;
+                next();
+            })
+            .catch(err => {
+                // an sql error occurred 
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: err
+                });
             });
-        });
+        }
 }
 
 

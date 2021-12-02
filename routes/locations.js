@@ -118,6 +118,12 @@ router.get('/', (request, response) => {
                                        lat/long values are not given.
  * 
  * @apiError (400: Too Many Locations) {String} message "Location Storage Full"
+                                       Occurs if more 10 locations are stored 
+                                       for a particular user 
+ * @apiError (400: Invalid ZipCode) {String} message 
+                                       "Malformed parameter. Zip Code must be five digits"
+ *
+ * @apiError (400: Duplicate Location) {String} message "Location already exists"                               
  * 
  * @apiUse SQLError
  */
@@ -132,18 +138,18 @@ router.post('/', (request, response, next) => {
 
             if (result.rowCount < MAX_LOCATIONS_ALLOWED) {
                 next();
-            } 
-
-            // throw a failure response if the usr can not add another 
-            // location. Error thrown will cause the following catch to happen
-            response.status(400).send({
-                message: "SQL Error from Location Storage Size",
-            });
+            } else {
+                // throw a failure response if the usr can not add another 
+                // location. Error thrown will cause the following catch to happen
+                response.status(400).send({
+                    message: "Location Storage Full",
+                });
+            }
 
         })
         .catch(err => {
             response.status(400).send({
-                message: "SQL Error from Location Storage Size",
+                message: "SQL Error",
             });
         });
 
@@ -164,12 +170,32 @@ router.post('/', (request, response, next) => {
             message: "Missing required information"
         });
     }
+}, (request, response, next) => {
+    // check to make sure that the given lat/long are 
+    // not already present in the database.
+    let query = `SELECT * FROM Locations WHERE Lat=$1 AND Long=$2`;
+    let values = [request.body.lat, request.body.long];
+    
+    pool.query(query, values)
+        .then(result => {
+            if (result.rowCount == 0) {
+                // continue if the lat/long does not exist
+                next();
+            } else {
+                // throw an error if the lat/long exists.
+                throw err;
+            }
+        }).catch(error => {
+            response.status(400).send({
+                message: "Location already exists",
+            });
+        })
 }, (request, response) => {
     
     // insert the new location into the database
     let lat = request.body.lat;
     let long = request.body.long;
-    console.log(request.decoded.memberid);
+
     
     let query = `INSERT INTO Locations(MemberId, Lat, Long)
                  VALUES ($1, $2, $3)`;
@@ -199,7 +225,7 @@ function addLatLong(request, response, next) {
     if (zipcode.length < 5 || zipcode.length > 5) {
         // zipcode is not 5 digits.
         response.status(400).send({
-            message: "Malformed parameter. Zip Code must be a five digits"
+            message: "Malformed parameter. Zip Code must be five digits"
         })
 
     } else {
@@ -213,18 +239,84 @@ function addLatLong(request, response, next) {
 
         axios.get(locationAPIurl, { params })
             .then(response => {
-                // assign the retrieved lat and long to the body
+                
+                // assign the retrieved lat and long to the body)
                 request.body.lat = response.data.latt;
                 request.body.long = response.data.longt;
-                next();
 
+                // check to make sure that the given zipcode 
+                // produced valid lat/longs
+                // note: a zipcode that results in lat:0  long:0 will be marked as invalid
+                
+                if (request.body.lat == 0 && request.body.long == 0) {
+                    // causes the catch block to run
+                    throw err;
+                } else {
+                    next();
+                }
+                
             }).catch(error => {
                 response.status(400).send({
                     message: "ZIP to lat/lon API Error",
                     error: error
-                })
+                });
             });
     }
 }
+
+
+
+
+
+/**
+ * @api {delete} /weather/locations/ Request to delete a particular saved location
+ * @apiName DeleteLocation
+ * @apiGroup Weather/Locations
+ * 
+ * @apiDescription Deletes the given "lat:long" location included in the params
+                   for a particular user
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ * @apiParam {String} location the location in the form "lat:long" 
+                      that should be deleted from the database for this user
+ *
+ * @apiSuccess {boolean} success true when the location is deleted
+ * 
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * 
+ * 
+ * @apiUse SQLError               
+ */
+router.delete('/:location?', (request, response, next) => {
+    // make sure params exist
+    if (isStringProvided(request.params.location)) {
+        next();
+    } else {
+        response.status(400).send({
+            message: "Missing required information"
+        });
+    }
+}, (request, response) => {
+    // delete the row that the user is trying to delete (if it exists).
+    // there is no need to check the lat/long param beyond what we've done. 
+    // The sql will operate fine even if invalid values are given
+    let query = `DELETE FROM Locations 
+                 WHERE MemberId=$1 AND Lat=$2 AND Long=$3`;
+    const [lat, long] = request.params.location.split(':');
+    let values = [request.decoded.memberid, lat, long];
+                  
+    pool.query(query, values)
+    .then(result => {
+        response.status(201).send({
+            success: true
+        });
+    })  
+    .catch(err => {
+        response.status(400).send({
+            message: "SQL Error",
+            error: err
+        });
+    })         
+});
 
 module.exports = router;
