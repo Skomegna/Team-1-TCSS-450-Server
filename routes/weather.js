@@ -204,7 +204,6 @@ router.get("/:location?", (request, response, next) => {
                     let lat = response.data.latt;
                     let long = response.data.longt;
                     let city = response.data.standard.city;
-                    city = city[0] + city.substring(1).toLowerCase();
                     let region = response.data.standard.region;
 
                     request.body.coordinates = {
@@ -253,15 +252,24 @@ router.get("/:location?", (request, response, next) => {
                 error: error
             });
         });
-}, dtToHumanDate, createCurrentWeather, createHourlyWeather, createDailyWeather, (request, response) => {
+}, dtToHumanDate, 
+   createCurrentWeather,
+   createHourlyWeather,
+   createDailyWeather, (request, response) => {
 
-    // returns needed weather data as three objects:
-    //    request.body.currentData,
-    //    request.body.hourData, 
-    //    request.body.dailyData
+    
+    // format the location name (NEW YORK) -> (New York)
+    request.body.coordinates.city = "Your Mom's House";
+    let words = request.body.coordinates.city.split(" ");
+    for (let i  = 0; i < words.length; i++) {
+        words[i] = words[i].toLowerCase();
+        words[i] = words[i][0].toUpperCase() + words[i].slice(1);
+    }
+    let updatedLoc = words.slice(0, words.length).join(' ');
+
     response.status(201).send({
         success: true,
-        location: request.body.coordinates.city + ", " + request.body.coordinates.region,
+        location: updatedLoc + ", " + request.body.coordinates.region,
         currentData: request.body.currentData,
         hourData: request.body.hourData,
         dailyData: request.body.dailyData
