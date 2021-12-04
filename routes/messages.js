@@ -134,8 +134,6 @@ router.post("/", (request, response, next) => {
         let values = [request.body.chatId];
         pool.query(query, values)
             .then(result => {
-                console.log(request.decoded.email);
-                console.log(request.body.message);
                 result.rows.forEach(entry => 
                     msg_functions.sendMessageToIndividual(
                         entry.token, 
