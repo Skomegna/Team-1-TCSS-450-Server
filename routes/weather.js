@@ -257,9 +257,7 @@ router.get("/:location?", (request, response, next) => {
    createHourlyWeather,
    createDailyWeather, (request, response) => {
 
-    
     // format the location name (NEW YORK) -> (New York)
-    request.body.coordinates.city = "Your Mom's House";
     let words = request.body.coordinates.city.split(" ");
     for (let i  = 0; i < words.length; i++) {
         words[i] = words[i].toLowerCase();

@@ -53,15 +53,19 @@ const pool = require('./sql_conn.js');
         });
 };
 
+
+
 /**
  * Checks if the nickname located at request.body.nickname 
  * exists within the database Members table. 
  * 
- * If the username exists, call next.
+ * If the username exists, add the memberId to request.body.otherMemberID 
+ * and call next.
+ *
  * If the username does not exist, 
  * send a 400 error { message: "Nickname does not exist" }
  * 
- * Can potentially send a 400 error
+ * Can alsp potentially send a 400 error
  * { 
  *      message: "SQL Error",
  *      detail: err.detail
@@ -70,7 +74,7 @@ const pool = require('./sql_conn.js');
  function checkNicknameExists(request, response, next) {
     const nickname = request.body.nickname;
     let theValues = [nickname];
-    let theQuery = "SELECT Nickname FROM Members WHERE Nickname=$1";
+    let theQuery = "SELECT MemberId FROM Members WHERE Nickname=$1";
     pool.query(theQuery, theValues)
         .then(result => {
             
@@ -81,6 +85,7 @@ const pool = require('./sql_conn.js');
                 });
             } else {
                 // nickname found, so move on to next function.
+                request.body.otherMemberID = result.rows[0].memberid;
                 next();
             }
         })
@@ -94,8 +99,88 @@ const pool = require('./sql_conn.js');
         });
 };
 
+
+
 /**
- * Checks if the memberiD located at request.body.memberID 
+ * Checks if the identifier located at request.body.identifier 
+ * exists within the database Members table 
+ * in the request.body.identifierType column. 
+ * 
+ * If the identifier exists, add the memberId to request.body.otherMemberID 
+ * and call next.
+ * 
+ * If the identifier is invalid, 
+ * send a 400 error: {message: "Invalid Identifier Type"}
+ * 
+ * If there are more than 1 accounts with the given identifier, 
+ * (case insensitive), send a 400 error: 
+ *                      {message: "Duplicate identifiers exist"}
+ * 
+ * If the identifier does not exist, 
+ * send a 400 error: { message: "nickname does not exist" } or
+ *                   { message: "firstname does not exist" } or
+ *                   { message: "lastname does not exist" } or 
+ *                   { message: "email does not exist" }
+ * 
+ * Can also potentially send a 400 error
+ * { 
+ *      message: "SQL Error",
+ *      detail: err.detail
+ * }
+ */
+function checkIfExists(request, response, next) {
+    const identifierType = request.body.identifierType;
+    if (identifierType != "nickname" &&
+            identifierType != "firstname" &&
+            identifierType != "lastname"  &&
+            identifierType != "email") {
+        // the given identifier type is invalid, so don't try and use it
+        response.status(400).send({ 
+            message: "Invalid Identifier Type"
+        });
+    } else {
+        // the given identifier type is valid so use it 
+        // to check if the identifier is in the members table
+        let query = "SELECT MemberId FROM Members WHERE lower(" + 
+                request.body.identifierType + ")=$1";
+        let values = [request.body.identifier.toLowerCase()];
+
+        pool.query(query, values)
+            .then(result => {
+                if (result.rowCount == 0) {
+                    // query didn't find the identifier for the identifierType, 
+                    // so the result array is empty
+                    response.status(400).send({
+                        message: request.body.identifierType + " does not exist"
+                    });
+                } else if (result.rowCount > 1) {
+                    response.status(400).send({
+                        message: "Duplicate identifiers exist"
+                    });
+                
+                } else {
+                    // identifier found, so set the memberId 
+                    // and move on to next function.
+                    request.body.otherMemberID = result.rows[0].memberid;
+                    next();
+                }
+            })
+            .catch((err) => {
+                //log the error
+                console.log(err.stack);
+                response.status(400).send({
+                    message: "SQL Error",
+                    detail: err.detail
+                });
+            });
+    }
+};
+
+
+
+
+/**
+ * Checks if the memberID located at request.body.memberID 
  * exists within the database Members table. 
  * 
  * If the memberID exists, call next.
@@ -199,14 +284,11 @@ function addMemberID(request, response, next) {
  */ 
 function getContactInfo(request, response, next) {
 
-console.log("IDS:");
-console.log(request.body.memberIDs);
     let memberIDs = request.body.memberIDs;
 
     // if there aren't IDs, set request.body.contactInfoList 
     // to an empty array and move on.
     // and move onto next function
-console.log(memberIDs.length);
     if (memberIDs.length === 0) {
         request.body.contactInfoList = [];
         next();
@@ -218,7 +300,6 @@ console.log(memberIDs.length);
             query += "memberID=" + memberIDs[i] + " OR ";
         }
         query = query.substring(0, query.length - 3);
-console.log(query);
         
         pool.query(query)
             .then(result => {
@@ -259,5 +340,6 @@ module.exports = {
     checkNicknameExists, 
     checkMemberIDExists, 
     addMemberID, 
-    getContactInfo
+    getContactInfo,
+    checkIfExists
 };
