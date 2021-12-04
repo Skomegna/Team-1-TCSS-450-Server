@@ -18,10 +18,9 @@ const pool = require('../utilities/exports').pool;
 const validation = require('../utilities').validation;
 
 const databaseUtils = require('../utilities/exports').database;
-const checkNicknameExists = databaseUtils.checkNicknameExists;
+const checkIfExists = databaseUtils.checkIfExists;
 const checkMemberIDExists = databaseUtils.checkMemberIDExists;
 const getContactInfo = databaseUtils.getContactInfo;
-const addMemberID = databaseUtils.addMemberID;
 
 const push_tools = require('../utilities/exports').pushyTools;
 const sendNewContactRequestNotif = push_tools.sendNewContactRequestNotif;
@@ -53,23 +52,30 @@ let isStringProvided = validation.isStringProvided;
 
 
 
+
 /**
  * @api {post} /contacts/requests Request to create a contact request
  * @apiName PostContactRequest
  * @apiGroup Contacts/Requests
  * 
  * @apiDescription Creates a contact request from the request 
-                   sender to the account specified by the given nickname
+                   sender to the account specified by the given identifier.
+                   Note: the identifier is checked in the database case 
+                   insensitive.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
- * @apiParam  {String} nickname 
-        the nickname of the account the contact request is for
+ * @apiParam  {String} identifier the String identifier that represents
+                       the account we want to create the request with
+ * @apiParam  {String} identifierType the type of identifier we are 
+                       sending the request with.
+                       Can only be "nickname", "firstname", "lastname", 
+                       or "email"
  *
  * @apiParamExample {json} Request-Body-Example:
  *     {
- *         "nickname": "theNickname"
+ *         "identifier": "theNickname",
+ *         "identifierType": "nickname"
  *     }
-
  *
  * @apiSuccess (Success 201) {boolean} success 
         true when the contact request has been created
@@ -77,9 +83,25 @@ let isStringProvided = validation.isStringProvided;
  * @apiError (400: Missing Parameters) {String} message 
         "Missing required information"
  * 
- * @apiError (400: Invalid nickname) {String} message 
-        "Nickname does not exist"
+ * @apiError (400: Invalid Identifier Type) {String} message 
+        "Invalid Identifier Type"
  * 
+ * @apiError (400: Duplicate Identifier) {String} message 
+        "Duplicate identifiers exist" occurs when an identifier is the
+        same for two different accounts
+ *
+ * @apiError (400: Nickname not found) {String} message 
+        "nickname does not exist"
+ *
+ * @apiError (400: First name not found) {String} message 
+                                       "firstname does not exist"
+ * 
+ * @apiError (400: Last name not found) {String} message 
+                                       "lastname does not exist"
+ 
+ * @apiError (400: Email not found) {String} message 
+                                    "email does not exist"
+ *
  * @apiError (400: Contact Request with Self) {String} message 
         "Can not create contact with oneself"
  * 
@@ -96,16 +118,21 @@ let isStringProvided = validation.isStringProvided;
  * @apiUse JSONError
  */
 router.post('/', (request, response, next) => {
-    // check to make sure the required nickname is provided
+    // check to make sure the required identifier and identifier type 
+    // is provided
     // note: the JWT has already been checked by this point.
-    if (!isStringProvided(request.body.nickname)) {
+    if (!isStringProvided(request.body.identifier) || !isStringProvided(request.body.identifierType)) {
         response.status(400).send({ 
             message: "Missing required information"
         });
     } else {
         next();
     }
-}, checkNicknameExists, addMemberID, (request, response, next) => {
+}, checkIfExists, (request, response, next) => {
+    // the previous functions (that check to make sure the identifier
+    // is in the members table somewhere) will place the other 
+    // member's memberid at request.body.otherMemberID
+
     // don't allow someone to create a contact with themself
     const myID = request.decoded.memberid;
     const otherID = request.body.otherMemberID;
@@ -116,12 +143,11 @@ router.post('/', (request, response, next) => {
             message: "Can not create contact with oneself"
         });
     }
-    
 }, (request, response, next) => {
     // check to make sure that the two members are not already contacts
     const query = `SELECT * FROM Contacts 
-                   WHERE (MemberID_A=$1 AND MEMBERID_B=$2) 
-                   OR (MemberID_A=$2 AND MEMBERID_B=$1)`;
+                    WHERE (MemberID_A=$1 AND MEMBERID_B=$2) 
+                    OR (MemberID_A=$2 AND MEMBERID_B=$1)`;
     const values = [request.decoded.memberid, request.body.otherMemberID];
 
     pool.query(query, values)
@@ -151,7 +177,7 @@ router.post('/', (request, response, next) => {
     // memberID to otherMemberID already exists
 
     const query = `SELECT * FROM Contact_Requests 
-                   WHERE (MemberID_A=$1 AND MEMBERID_B=$2) `;
+                    WHERE (MemberID_A=$1 AND MEMBERID_B=$2) `;
     const values = [request.decoded.memberid, request.body.otherMemberID];
 
     pool.query(query, values)
@@ -181,8 +207,8 @@ router.post('/', (request, response, next) => {
     const otherID = request.body.otherMemberID;
 
     let insert = `INSERT INTO Contact_Requests 
-                  (MemberID_A, MemberID_B) 
-                  VALUES ($1, $2)`;
+                    (MemberID_A, MemberID_B) 
+                    VALUES ($1, $2)`;
     let values = [myID, otherID];
 
     pool.query(insert, values)
@@ -201,7 +227,7 @@ router.post('/', (request, response, next) => {
     // send a notification for the new contact request 
     // to the sender and the reciever
     let query = `SELECT token FROM Push_Token
-                 WHERE MemberId=$1 OR MemberId=$2`;
+                    WHERE MemberId=$1 OR MemberId=$2`;
     let values = [request.decoded.memberid, request.body.otherMemberID];
     
     pool.query(query, values)
@@ -604,6 +630,121 @@ router.put('/', (request, response, next) => {
                 error: err
             });
         });
+ });
+
+
+
+
+/**
+ * @api {get} /contacts/requests Request to create a contact request
+ * @apiName GetContactRequestSearchList
+ * @apiGroup Contacts/Requests/Search
+ * 
+ * @apiDescription Returns a list of contact information that corresponds 
+                   to the members that have identifiers similar to 
+                   request.body.identifier in the column 
+                   request.body.identifierType in the Members table.
+ * 
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ * @apiParam  {String} identifier the String identifier that represents
+                       the beginning of the account identifier
+ * @apiParam  {String} identifierType the type of identifier we are 
+                       sending the request with.
+                       Can only be "nickname", "firstname", "lastname", 
+                       or "email"
+ *
+ * @apiParamExample {json} Request-Body-Example:
+ *     {
+ *         "identifier": "theNickname",
+ *         "identifierType": "nickname"
+ *     }
+ *
+ * @apiSuccess (Success 201) {boolean} success 
+        true when the contact request has been created
+ * @apiSuccess (Success 201) {boolean} data 
+        the array of user information that corresponds to accounts
+        similar to the indentifier
+ * 
+ * @apiSuccessExample {json} Response-Success-Example:
+ *  {
+ *      "success": true,
+ *      "data":[
+ *          {
+ *              "memberid":"42",
+ *              "first":"Charles",
+ *              "last":"Bryan",
+ *              "nickname": "Big C"
+ *          }, 
+ *          {
+ *              "memberid":"167",
+ *              "first":"Austn",
+ *              "last":"Attaway",
+ *              "nickname": "AustnSauce"
+ *          }
+ *      ]
+ * 
+ * @apiError (400: Missing Parameters) {String} message 
+        "Missing required information"
+ * 
+ * @apiError (400: Invalid Identifier Type) {String} message 
+        "Invalid Identifier Type"
+ * 
+ * @apiUse SQLError
+ * 
+ */
+ router.get('/search', (request, response, next) => {
+    // check to make sure the required identifier and identifier type 
+    // is provided
+    // note: the JWT has already been checked by this point.
+    if (!isStringProvided(request.body.identifierType) || 
+            !isStringProvided(request.body.identifierType)) {
+        response.status(400).send({ 
+            message: "Missing required information"
+        });
+    } else {
+        next();
+    }
+ }, (request, response, next) => {
+    let identifierType = request.body.identifierType
+    // check to make sure the given identifier type is valid
+    if (identifierType != "nickname" &&
+            identifierType != "firstname" &&
+            identifierType != "lastname"  &&
+            identifierType != "email") {
+        // the given identifier type is invalid, so don't try and use it
+        response.status(400).send({ 
+           message: "Invalid Identifier Type"
+        });
+    } else {
+        // the given identifier type is valid
+        next();
+    }
+   
+ }, (request, response, next) => {
+      // get all the memberIds that start with the identifier 
+    // in the identifierType column
+    let value = request.body.identifier.toLowerCase();
+    let query = `SELECT MemberId FROM Members WHERE lower(` + 
+            request.body.identifierType.toString() + `) LIKE '${value}%'`;
+
+    pool.query(query) 
+        .then(result => {
+            let resultRows = [];
+            result.rows.forEach(row => resultRows.push(row.memberid));
+            request.body.memberIDs = resultRows;
+            next();
+        })
+        .catch(err => {
+            response.status(400).send({
+                message: "SQL Error",
+                detail: err.detail
+            });
+        })
+ }, getContactInfo, (request, response, next) => {
+    response.send({
+        success: true,
+        data: request.body.contactInfoList 
+    });
  });
 
 
