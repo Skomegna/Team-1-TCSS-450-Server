@@ -86,7 +86,7 @@ function filterChatIds(request, response, next) {
 
 /*
  * Adds the chat members in request.body.memberIds to the
- * chat specified byrequest.body.chatId
+ * chat specified by request.body.chatId
  * 
  * Can cause a 400 error "Error occurred while adding members" 
  */
@@ -154,7 +154,7 @@ function addChatMembers(request, response, next) {
  * 
  * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
  * 
- * @apiError (400: Unknown Error) "message": "unknown error"
+ * @apiError (400: Unknown Error) message "unknown error"
  * 
  * @apiUse SQLError
  * 
@@ -189,8 +189,10 @@ router.post("/", (request, response, next) => {
         });
 
  }, addChatMembers, (request, response, next) => {
-    // we added the other members, but we should also add ourself
-    let query = "INSERT INTO ChatMembers (chatid, memberid) VALUES ($1, $2)";
+    // we added the other members, but we should also add the person 
+    // who sent the request and the admin member
+    // note: the admin memberId is 0
+    let query = "INSERT INTO ChatMembers (chatid, memberid) VALUES ($1, 0), ($1, $2)";
     let values = [request.body.chatId, request.decoded.memberid];
 
     pool.query(query, values)
@@ -205,25 +207,26 @@ router.post("/", (request, response, next) => {
         })
 
  }, (request, response, next) => {
-    // add the message to the database
+    // add the first message to the database, 
+    // note the member that is sending this message is admin
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
                   RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
     let values = [request.body.chatId,
                   request.body.firstMessage,
-                  request.decoded.memberid];
+                  0];
 
     pool.query(insert, values)
         .then(result => {
             if (result.rowCount == 1) {
                 //insertion success. Attach the message to the Response obj
                 response.message = result.rows[0];
-                response.message.nickname = request.decoded.nickname;
+                response.message.nickname = "TalkBox Admin";
                 //Pass on to next to push
                 next();
             } else {
                 response.status(400).send({
-                    "message": "unknown error"
+                    message: "unknown error"
                 });
             };
 
@@ -286,7 +289,7 @@ router.post("/", (request, response, next) => {
  * 
  * @apiError (400: Chat Not Found) {String} message "Chat ID not found"
  * 
- * @apiError (400: Unknown Error) "message": "unknown error"
+ * @apiError (400: Unknown Error) message "unknown error"
  * 
  * @apiError (400: Message Insertion Error) {String} message "SQL Error inserting message"
  * 
@@ -365,20 +368,21 @@ router.put("/", (request, response, next) => {
 
 
 }, addChatMembers, (request, response, next) => {
-    // add the message to the database
+    // add the add message to the database, note the message is 
+    // sent by the TalkBox Admin account
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
                   RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
     let values = [request.body.chatId,
                   request.body.message,
-                  request.decoded.memberid];
+                  0];
 
     pool.query(insert, values)
         .then(result => {
             if (result.rowCount == 1) {
                 //insertion success. Attach the message to the Response obj
                 response.message = result.rows[0];
-                response.message.nickname = request.decoded.nickname;
+                response.message.nickname = "TalkBox Admin";
                 //Pass on to next to push
                 next();
             } else {
@@ -504,7 +508,7 @@ router.get("/:chatId", (request, response, next) => {
 });
 
 /**
- * @api {delete} /chats/:chatId?/:email? Request delete a user from a chat
+ * @api {delete} /chats/:chatId?/:email/:message? Request delete a user from a chat
  * @apiName DeleteChats
  * @apiGroup Chats
  * 
@@ -513,22 +517,33 @@ router.get("/:chatId", (request, response, next) => {
  * 
  * @apiParam {Number} chatId the chat to delete the user from
  * @apiParam {String} email the email of the user to delete
+ * @apiParam {String} message the message sent by admin when the 
+                      user is removed
  * 
  * @apiSuccess {boolean} success true when the name is deleted
+ *
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ *  
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
  * 
  * @apiError (404: Chat Not Found) {String} message "chatID not found"
+ *
  * @apiError (404: Email Not Found) {String} message "email not found"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
+ *
  * @apiError (400: Duplicate Email) {String} message "user not in chat"
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
- * @apiError (400: SQL Error) {String} message the reported SQL error details
+ * @apiError (400: Unknown Error) message "unknown error"
+ * 
+ * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
+ * 
+ * @apiUse SQLError
  * 
  * @apiUse JSONError
  */ 
-router.delete("/:chatId/:email", (request, response, next) => {
+router.delete("/:chatId/:email/:message", (request, response, next) => {
     //validate on empty parameters
-    if (!request.params.chatId || !request.params.email) {
+    if (!request.params.chatId || !isStringProvided(request.params.email) || 
+            !isStringProvided(request.params.message)) {
         response.status(400).send({
             message: "Missing required information"
         });
@@ -540,7 +555,7 @@ router.delete("/:chatId/:email", (request, response, next) => {
         next();
     }
 }, (request, response, next) => {
-    //validate chat id exists
+    // validate chat id exists
     let query = 'SELECT * FROM CHATS WHERE ChatId=$1';
     let values = [request.params.chatId];
 
@@ -560,7 +575,7 @@ router.delete("/:chatId/:email", (request, response, next) => {
             });
         });
 }, (request, response, next) => {
-    //validate email exists AND convert it to the associated memberId
+    // validate email exists AND convert it to the associated memberId
     let query = 'SELECT MemberID FROM Members WHERE Email=$1';
     let values = [request.params.email];
 
@@ -581,12 +596,13 @@ router.delete("/:chatId/:email", (request, response, next) => {
             });
         });
 }, (request, response, next) => {
-        //validate email exists in the chat
+        // validate email exists in the chat
         let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2';
         let values = [request.params.chatId, request.params.email];
     
         pool.query(query, values)
             .then(result => {
+
                 if (result.rowCount > 0) {
                     next();
                 } else {
@@ -601,25 +617,77 @@ router.delete("/:chatId/:email", (request, response, next) => {
                 });
             });
 
-}, (request, response) => {
-    //Delete the memberId from the chat
+}, (request, response, next) => {
+    // Delete the memberId from the chat
     let insert = `DELETE FROM ChatMembers
                   WHERE ChatId=$1
                   AND MemberId=$2
                   RETURNING *`;
+                  
     let values = [request.params.chatId, request.params.email];
     pool.query(insert, values)
         .then(result => {
-            response.send({
-                success: true
-            });
+            next();
         }).catch(err => {
             response.status(400).send({
                 message: "SQL Error",
                 error: err
             });
         });
-    });
+}, (request, response, next) => {
+    // send the leave message to the chat room from the Admin account
+    let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
+                  VALUES($1, $2, $3) 
+                  RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
+    let values = [request.params.chatId,
+                  request.params.message,
+                  0];
 
+    pool.query(insert, values)
+        .then(result => {
+            if (result.rowCount == 1) {
+                //insertion success. Attach the message to the Response obj
+                response.message = result.rows[0];
+                response.message.nickname = "TalkBox Admin";
+                //Pass on to next to push
+                next();
+            } else {
+                response.status(400).send({
+                    "message": "unknown error"
+                });
+            };
+
+        }).catch(err => {
+            response.status(400).send({
+                message: "SQL Error inserting message",
+                error: err
+            });
+        });
+
+}, (request, response) => {
+    // send a notification of the new message to all of the chat members
+    let query = `SELECT token FROM Push_Token
+                    INNER JOIN ChatMembers ON
+                    Push_Token.memberid=ChatMembers.memberid
+                    WHERE ChatMembers.chatId=$1`;
+    let values = [request.params.chatId];
+    pool.query(query, values)
+        .then(result => {
+            result.rows.forEach(entry => 
+                msg_functions.sendMessageToIndividual(
+                    entry.token, 
+                    response.message));
+            response.send({
+                success: true
+            });
+        }).catch(err => {
+
+            response.status(400).send({
+                message: "SQL Error on select from push token",
+                error: err
+            });
+        });
+
+});
 
 module.exports = router;
