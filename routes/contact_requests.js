@@ -721,11 +721,11 @@ router.put('/', (request, response, next) => {
     }
    
  }, (request, response, next) => {
-      // get all the memberIds that start with the identifier 
-    // in the identifierType column
+    // get all the memberIds that start with the identifier 
+    // in the identifierType column. Note: only selects the first 20 
     let value = request.body.identifier.toLowerCase();
     let query = `SELECT MemberId FROM Members WHERE lower(` + 
-            request.body.identifierType.toString() + `) LIKE '${value}%'`;
+            request.body.identifierType.toString() + `) LIKE '${value}%' LIMIT 20`;
 
     pool.query(query) 
         .then(result => {
