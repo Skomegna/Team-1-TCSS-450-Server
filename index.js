@@ -42,6 +42,8 @@ app.use('/auth', middleware.checkToken, require('./routes/pushyregister.js'));
 
 app.use('/messages', middleware.checkToken, require('./routes/messages.js'));
 
+app.use('/messages/typing', middleware.checkToken, require('./routes/messages_typing.js'));
+
 app.use('/chats/all', middleware.checkToken, require('./routes/chat_list.js'));
 
 app.use('/chats/chat_members', middleware.checkToken, require('./routes/chat_members.js'));

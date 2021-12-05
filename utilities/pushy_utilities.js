@@ -11,6 +11,20 @@ const Pushy = require('pushy');
 const pushyAPI = new Pushy(process.env.PUSHY_API_KEY);
 
 /* 
+ * Sends a typing pushy notification to a specific 
+ * client specified by the token
+ */
+function sendTypingNotif(token, isTyping, nickname) {
+    // the data to send
+    var data = {
+        "type": "typing",
+        "isStartingToType": isTyping,
+        "nickname": nickname
+    }
+    sendPushy(token, data);
+}
+
+/* 
  * Sends a message pushy notification to a specific 
  * client specified by the token
  */
@@ -114,5 +128,6 @@ module.exports = {
     sendNewContactRequestNotif, 
     sendContactRequestResponseNotif, 
     sendContactDeletionNotif,
-    sendContactRequestDeletionNotif
+    sendContactRequestDeletionNotif,
+    sendTypingNotif
 }
