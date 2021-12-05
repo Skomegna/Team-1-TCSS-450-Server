@@ -221,7 +221,7 @@ router.post("/", (request, response, next) => {
             if (result.rowCount == 1) {
                 //insertion success. Attach the message to the Response obj
                 response.message = result.rows[0];
-                response.message.nickname = request.decoded.nickname;
+                response.message.nickname = "TalkBox Admin";
                 //Pass on to next to push
                 next();
             } else {
