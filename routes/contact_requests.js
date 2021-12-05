@@ -644,6 +644,7 @@ router.put('/', (request, response, next) => {
                    to the members that have identifiers similar to 
                    request.body.identifier in the column 
                    request.body.identifierType in the Members table.
+                   Limits the number of members in the result array to 20.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam  {String} identifier the String identifier that represents
