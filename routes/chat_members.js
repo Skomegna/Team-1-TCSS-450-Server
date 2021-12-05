@@ -95,18 +95,27 @@ router.get("/:chatId?", (request, response, next) => {
     pool.query(query, cId)
         .then(result => {
             let list = result.rows;
-            
+
             // iterate over each element in the array
             for (var i = 0; i < list.length; i++){
 
                 // look for the entry with a matching memberId value
-                if (list[i].memberid == userId){
+                // or the admin member id(0), we don't want to include
+                // these participants in the member list
+                if (list[i].memberid == userId || list[i].memberid == 0){
                     // delete object with current member
-                    list.splice(i, 1);
-                    // assign the list of chat participants to request.body.list
-                    request.body.list = list;
+                    // note we need to decrement i when this occurs so
+                    // we don't skip over elements after deleting one
+                    list.splice(i--, 1);
+
+                    
+                    
                 }
             }
+            // assign the list of chat participants to request.body.list
+            // after removing the requester and the admin
+            request.body.list = list;
+
             // if a particular user is not in the asked chat, it gives an error.
             if (request.body.list != undefined) {
                 next();
