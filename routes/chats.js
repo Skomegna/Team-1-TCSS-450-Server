@@ -154,7 +154,7 @@ function addChatMembers(request, response, next) {
  * 
  * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
  * 
- * @apiError (400: Unknown Error) "message": "unknown error"
+ * @apiError (400: Unknown Error) message "unknown error"
  * 
  * @apiUse SQLError
  * 
@@ -226,7 +226,7 @@ router.post("/", (request, response, next) => {
                 next();
             } else {
                 response.status(400).send({
-                    "message": "unknown error"
+                    message: "unknown error"
                 });
             };
 
@@ -289,7 +289,7 @@ router.post("/", (request, response, next) => {
  * 
  * @apiError (400: Chat Not Found) {String} message "Chat ID not found"
  * 
- * @apiError (400: Unknown Error) "message": "unknown error"
+ * @apiError (400: Unknown Error) message "unknown error"
  * 
  * @apiError (400: Message Insertion Error) {String} message "SQL Error inserting message"
  * 
@@ -508,7 +508,7 @@ router.get("/:chatId", (request, response, next) => {
 });
 
 /**
- * @api {delete} /chats/:chatId?/:email? Request delete a user from a chat
+ * @api {delete} /chats/:chatId?/:email/:message? Request delete a user from a chat
  * @apiName DeleteChats
  * @apiGroup Chats
  * 
@@ -517,16 +517,26 @@ router.get("/:chatId", (request, response, next) => {
  * 
  * @apiParam {Number} chatId the chat to delete the user from
  * @apiParam {String} email the email of the user to delete
+ * @apiParam {String} message the message sent by admin when the 
+                      user is removed
  * 
  * @apiSuccess {boolean} success true when the name is deleted
+ *
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ *  
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
  * 
  * @apiError (404: Chat Not Found) {String} message "chatID not found"
+ *
  * @apiError (404: Email Not Found) {String} message "email not found"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
+ *
  * @apiError (400: Duplicate Email) {String} message "user not in chat"
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
  * 
- * @apiError (400: SQL Error) {String} message the reported SQL error details
+ * @apiError (400: Unknown Error) message "unknown error"
+ * 
+ * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
+ * 
+ * @apiUse SQLError
  * 
  * @apiUse JSONError
  */ 
@@ -668,7 +678,7 @@ router.delete("/:chatId/:email/:message", (request, response, next) => {
                     entry.token, 
                     response.message));
             response.send({
-                success: true,
+                success: true
             });
         }).catch(err => {
 
