@@ -645,6 +645,8 @@ router.put('/', (request, response, next) => {
                    request.body.identifier in the column 
                    request.body.identifierType in the Members table.
                    Limits the number of members in the result array to 20.
+                   Note: the requester's contacts and outgoing contact 
+                   requests will be filtered out of the list.
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * @apiParam  {String} identifier the String identifier that represents
@@ -725,10 +727,18 @@ router.put('/', (request, response, next) => {
     // get all the memberIds that start with the identifier 
     // in the identifierType column. Note: only selects the first 20 
     let value = request.body.identifier.toLowerCase();
-    let query = `SELECT MemberId FROM Members WHERE lower(` + 
-            request.body.identifierType.toString() + `) LIKE '${value}%' LIMIT 20`;
 
-    pool.query(query) 
+    let query = `select memberid from Members       
+                 where lower(${request.body.identifierType}) LIKE '${value}%' and 
+                 not memberid=0 and memberid NOT IN 
+                    (select memberid_b from contacts where memberid_a=$1) 
+                        and memberid NOT IN 
+                        (select memberid_a from contacts where memberid_b=$1) 
+                            and memberid not in 
+                            (select memberid_b from contact_requests where memberid_a = $1) LIMIT 20`;
+    let values = [request.decoded.memberid];
+
+    pool.query(query, values) 
         .then(result => {
             let resultRows = [];
             result.rows.forEach(row => resultRows.push(row.memberid));
@@ -741,12 +751,11 @@ router.put('/', (request, response, next) => {
                 detail: err.detail
             });
         })
- }, getContactInfo, (request, response, next) => {
+}, getContactInfo, (request, response, next) => {
     response.send({
         success: true,
         data: request.body.contactInfoList 
     });
  });
-
 
 module.exports = router;

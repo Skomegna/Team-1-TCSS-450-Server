@@ -90,7 +90,7 @@ router.get('/', (request, response, next) => {
     let query = `SELECT * FROM Contacts 
                  WHERE MemberID_A=$1 OR MemberID_B=$1`;
     let values = [memberID];
-    // todo add contscts with 491 for testing
+    
     pool.query(query, values)
         .then(result => {
             request.body.contactRows = result.rows;
