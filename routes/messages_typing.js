@@ -116,7 +116,8 @@ router.post('/', (request, response, next) => {
             result.rows.forEach(entry => 
                 sendTypingNotif(entry.token, 
                                 request.body.chatId, 
-                                request.decoded.nickname));
+                                request.decoded.nickname,
+                                request.body.isStartingToType));
             response.send({
                 success:true
             });
