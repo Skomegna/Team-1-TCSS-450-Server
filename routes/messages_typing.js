@@ -114,7 +114,9 @@ router.post('/', (request, response, next) => {
     pool.query(query, values)
         .then(result => {
             result.rows.forEach(entry => 
-                sendTypingNotif(entry.token, request.body.chatId));
+                sendTypingNotif(entry.token, 
+                                request.body.chatId, 
+                                request.decoded.nickname));
             response.send({
                 success:true
             });

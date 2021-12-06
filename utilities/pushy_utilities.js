@@ -14,11 +14,12 @@ const pushyAPI = new Pushy(process.env.PUSHY_API_KEY);
  * Sends a typing pushy notification to a specific 
  * client specified by the token
  */
-function sendTypingNotif(token, chatId) {
+function sendTypingNotif(token, chatId, nickname) {
     // the data to send
     var data = {
         "type": "typing",
-        "chatId": chatId
+        "chatId": chatId,
+        "nickname": nickname
     }
     sendPushy(token, data);
 }
