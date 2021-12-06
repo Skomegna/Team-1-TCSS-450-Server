@@ -656,11 +656,6 @@ router.put('/', (request, response, next) => {
                        Can only be "nickname", "firstname", "lastname", 
                        or "email"
  *
- * @apiParamExample {json} Request-Body-Example:
- *     {
- *         "identifier": "theNickname",
- *         "identifierType": "nickname"
- *     }
  *
  * @apiSuccess (Success 201) {boolean} success 
         true when the contact request has been created
@@ -695,12 +690,12 @@ router.put('/', (request, response, next) => {
  * @apiUse SQLError
  * 
  */
- router.get('/search', (request, response, next) => {
+ router.get('/search/:identifier?/:identifierType?', (request, response, next) => {
     // check to make sure the required identifier and identifier type 
     // is provided
     // note: the JWT has already been checked by this point.
-    if (!isStringProvided(request.body.identifierType) || 
-            !isStringProvided(request.body.identifierType)) {
+    if (!isStringProvided(request.params.identifier) || 
+            !isStringProvided(request.params.identifierType)) {
         response.status(400).send({ 
             message: "Missing required information"
         });
@@ -708,7 +703,7 @@ router.put('/', (request, response, next) => {
         next();
     }
  }, (request, response, next) => {
-    let identifierType = request.body.identifierType
+    let identifierType = request.params.identifierType
     // check to make sure the given identifier type is valid
     if (identifierType != "nickname" &&
             identifierType != "firstname" &&
@@ -724,9 +719,10 @@ router.put('/', (request, response, next) => {
     }
    
  }, (request, response, next) => {
+
     // get all the memberIds that start with the identifier 
-    // in the identifierType column. Note: only selects the first 20 
-    let value = request.body.identifier.toLowerCase();
+    // in the identifierType column
+    let value = request.params.identifier.toLowerCase();
 
     let query = `select memberid from Members       
                  where lower(${request.body.identifierType}) LIKE '${value}%' and 
