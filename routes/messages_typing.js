@@ -113,12 +113,8 @@ router.post('/', (request, response, next) => {
     let values = [request.body.chatId];
     pool.query(query, values)
         .then(result => {
-            
             result.rows.forEach(entry => 
-                sendTypingNotif(
-                    entry.token, 
-                    request.body.isStartingToType,
-                    request.decoded.nickname));
+                sendTypingNotif(entry.token, request.body.chatId));
             response.send({
                 success:true
             });
