@@ -109,10 +109,11 @@ router.post('/', (request, response, next) => {
     let query = `SELECT token FROM Push_Token
                     INNER JOIN ChatMembers ON
                     Push_Token.memberid=ChatMembers.memberid
-                    WHERE ChatMembers.chatId=$1`;
-    let values = [request.body.chatId];
+                    WHERE ChatMembers.chatId=$1 AND NOT Push_Token.memberid=$2`;
+    let values = [request.body.chatId, request.decoded.memberid];
     pool.query(query, values)
         .then(result => {
+            console.log(result.rows.length);
             result.rows.forEach(entry => 
                 sendTypingNotif(entry.token, 
                                 request.body.chatId, 
