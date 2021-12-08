@@ -38,6 +38,7 @@ function sendMessageToIndividual(token, message, chatName) {
         "chatid": message.chatid,
         "chatName": chatName
     }
+    
     sendPushy(token, data);
 }
 
