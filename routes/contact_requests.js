@@ -726,7 +726,8 @@ router.put('/', (request, response, next) => {
 
     let query = `select memberid from Members       
                  where lower(${request.params.identifierType}) LIKE '${value}%' and 
-                 not memberid=0 and memberid NOT IN 
+                 not memberid=0 and not memberid=${request.decoded.memberid} 
+                 and memberid NOT IN 
                     (select memberid_b from contacts where memberid_a=$1) 
                         and memberid NOT IN 
                         (select memberid_a from contacts where memberid_b=$1) 
