@@ -29,14 +29,16 @@ function sendTypingNotif(token, chatId, nickname, isTyping) {
  * Sends a message pushy notification to a specific 
  * client specified by the token
  */
-function sendMessageToIndividual(token, message) {
+function sendMessageToIndividual(token, message, chatName) {
     
     // the data to send
     var data = {
         "type": "msg",
         "message": message,
-        "chatid": message.chatid
+        "chatid": message.chatid,
+        "chatName": chatName
     }
+    
     sendPushy(token, data);
 }
 

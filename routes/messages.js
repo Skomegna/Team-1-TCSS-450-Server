@@ -60,7 +60,7 @@ router.post("/", (request, response, next) => {
     };
 }, (request, response, next) => {
     //validate chat id exists
-    let query = 'SELECT * FROM CHATS WHERE ChatId=$1';
+    let query = 'SELECT Name FROM CHATS WHERE ChatId=$1';
     let values = [request.body.chatId];
 
     pool.query(query, values)
@@ -70,6 +70,7 @@ router.post("/", (request, response, next) => {
                     message: "Chat ID not found"
                 });
             } else {
+                request.body.chatName = result.rows[0].name;
                 next();
             };
         }).catch(error => {
@@ -137,7 +138,8 @@ router.post("/", (request, response, next) => {
                 result.rows.forEach(entry => 
                     msg_functions.sendMessageToIndividual(
                         entry.token, 
-                        response.message));
+                        response.message, 
+                        request.body.chatName));
                 response.send({
                     success:true
                 });
