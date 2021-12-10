@@ -616,8 +616,7 @@ router.put('/', (request, response, next) => {
             result.rows.forEach(entry =>  
                 sendContactRequestDeletionNotif(
                     entry.token,
-                    request.params.contactId,
-                    request.decoded.memberid
+                    request.decoded.nickname
                 ));
 
             response.send({
