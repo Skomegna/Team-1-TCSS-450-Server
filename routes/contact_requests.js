@@ -370,7 +370,7 @@ router.get('/', (request, response, next) => {
 }, getContactInfo, (request, response) => {
     // request.body.contactInfoList contains the contact info for 
     // the contacts that have been sent requests from this user
-    request.body.sentRequestContacts = request.body.contactInfoList;
+    request.body.sentRequestContacts = request.body.contactInfoList.reverse();
 
     response.status(201).send({
         success: true,
