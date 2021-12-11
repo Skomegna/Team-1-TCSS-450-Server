@@ -370,7 +370,7 @@ router.get('/', (request, response, next) => {
 }, getContactInfo, (request, response) => {
     // request.body.contactInfoList contains the contact info for 
     // the contacts that have been sent requests from this user
-    request.body.sentRequestContacts = request.body.contactInfoList;
+    request.body.sentRequestContacts = request.body.contactInfoList.reverse();
 
     response.status(201).send({
         success: true,
@@ -616,8 +616,7 @@ router.put('/', (request, response, next) => {
             result.rows.forEach(entry =>  
                 sendContactRequestDeletionNotif(
                     entry.token,
-                    request.params.contactId,
-                    request.decoded.memberid
+                    request.decoded.nickname
                 ));
 
             response.send({

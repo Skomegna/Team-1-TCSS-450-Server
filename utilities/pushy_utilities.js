@@ -98,11 +98,10 @@ function sendContactDeletionNotif(token, deletedMemberId, deleterMemberId,
  * Sends a contact  notification to a specific client specified by the token 
  * notifying that someone deleted their contact
  */
-function sendContactRequestDeletionNotif(token, deletedMemberId, deleterMemberId) {
+function sendContactRequestDeletionNotif(token, fromNickname) {
     const data = {
         "type": "contactRequestDeleted",
-        "deletedId": deletedMemberId.toString(),
-        "deletorId": deleterMemberId.toString(),  
+        "fromNickname": fromNickname
     };
     sendPushy(token, data);                                      
 }
