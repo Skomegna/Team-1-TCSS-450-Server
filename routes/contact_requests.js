@@ -341,7 +341,7 @@ router.get('/', (request, response, next) => {
     // at this point request.body.contactInfoList will contain the contact
     // information for the users who sent the requester's account
     // a contact request. 
-    request.body.receivedRequestContacts = request.body.contactInfoList;
+    request.body.receivedRequestContacts = request.body.contactInfoList.reverse();
     
     
     // get the member Ids for the contacts who this
