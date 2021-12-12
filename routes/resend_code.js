@@ -1,6 +1,9 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains the endpoints:
+ *      - /auth/resendcode (POST) Send a new verification code to user
  */
 
 //express is the framework we're going to use to handle requests
@@ -76,13 +79,18 @@ router.post('/', (request, response, next) => {
     const codeType = request.body.codeType;
     const code = request.body.code;
     if (codeType === "register") {
-        sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + code);
+        sendEmail(email, "Welcome to our App!",
+                 "Please verify your Email account.\n" + 
+                        "Your Verification Code: " + code);
        
     } else {
         //default message sent
-        sendEmail(email, "Talkbox Validation Code", "Here is your Talkbox validation code.\n\n" 
-        + "Code: " + code + "\n\n\n If you didn't request this code, please go to settings and change your" +
-        " password right away.  For assistance, please contact Talkbox Support");
+        sendEmail(email, "Talkbox Validation Code",
+                  "Here is your Talkbox validation code.\n\n" +
+                  "Code: " + code + "\n\n\n If you didn't request this " + 
+                  "code, please go to settings and change your" +
+                  " password right away. " + 
+                  " For assistance, please contact Talkbox Support");
     }
     response.status(201).send({
         success: true

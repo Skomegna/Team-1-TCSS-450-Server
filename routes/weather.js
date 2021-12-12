@@ -31,8 +31,6 @@ const url = 'https://api.openweathermap.org/data/2.5/onecall?lat=';
 const middleUrl1 = '&lon=';
 const middleUrl2 = '&exclude=alerts,minutely&units=imperial&appid=';
 
-// URL for API to convert unix timestamp to human-readable date
-const humanDateAPI = 'https://showcase.api.linx.twenty57.net/UnixTime/fromunixtimestamp?unixtimestamp=';
 
 // URL for API to convert zip code to lat/long and retrieve city name and regeon
 const locationAPIurl = 'https://geocode.xyz';
@@ -118,7 +116,8 @@ const locationApiKey = process.env.location_API_Key;
  * 
  * @apiError (400: API error) {String} message "lat/long to city name API Error" 
  * 
- * @apiError (400: Invalid Parameter) {String} message "Malformed Location Information"
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed Location Information"
  * 
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. 
                                                Zip Code must be a five digits"
@@ -224,11 +223,14 @@ router.get("/:location?", (request, response, next) => {
     }
 }, (request, response, next) => {
 
-    let lat = request.body.coordinates.lat;        // '47.245059';   // '35.6762'; - Tokyo   ;   lat=47.245059'  - Tacoma
-    let long = request.body.coordinates.long;       // '-122.438933'; // '139.6503' - Tokyo   ;   lon=-122.438933' - Tacoma
+    let lat = request.body.coordinates.lat;        
+    let long = request.body.coordinates.long;      
 
-    const userLocation = (theUrl, thelat, theMiddleUrl1, theLong, theMiddleUrl2, theApiKey) => {
-        let newUrl = theUrl + thelat + theMiddleUrl1 + theLong + theMiddleUrl2 + theApiKey;
+    const userLocation = (theUrl, thelat, theMiddleUrl1, theLong, 
+            theMiddleUrl2, theApiKey) => {
+        
+                let newUrl = theUrl + thelat + theMiddleUrl1 + 
+                theLong + theMiddleUrl2 + theApiKey;
         return newUrl;
     };
 

@@ -2,16 +2,15 @@
  * TCSS450 Mobile Applications
  * Fall 2021
  * 
- * Accept a chatId and return a list of contact objects that are the members in the chat.
- *          Get the chatIds for that particualr chat.
+ * Contains the chats/chat_members (GET) endpoint that accepts
+ * a chatId and return a list of contact objects that represent
+ * the members in the chat.
  */
 
 
-// used to handle requests
 const express = require('express');
 const router = express.Router();
 
-// Access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
 
 const validation = require('../utilities').validation;
@@ -19,19 +18,20 @@ let isStringProvided = validation.isStringProvided;
 
 
 /**
- * @api {get} /chat_members/:chatId? Request to get chat members list 
+ * @api {get} chat_members/:chatId? Request to get chat members list 
  * @apiName GetChatMembers
  * @apiGroup Chats
  * 
- * @apiDescription Request to get a list of all participants from the requested chat ID.
+ * @apiDescription Request to get a list of all participants 
+                   from the requested chat ID.
  * 
- * @apiParam {Number} chat id. 
+ * @apiParam {Number} chat the chat id we want the members from
  * 
  * @apiSuccess (Success 201) {boolean} success true if the data is given
  *
- * @apiSuccess (Success 201) {Array}  list the JSON object 
-                                      containing the data with the 
-                                      all chat members
+ * @apiSuccess (Success 201) {Array} list the JSON object 
+                                     containing the data with the 
+                                     all chat members
  * 
  * @apiSuccessExample {json} Response-Success-Example:
  * {
@@ -54,15 +54,15 @@ let isStringProvided = validation.isStringProvided;
     ]
 }
  *   
-* @apiError (404: Missing Parameters) {String} message
+ * @apiError (404: Missing Parameters) {String} message
  *                                              "Missing ChatId parameter"
  *    
  * @apiError (404: Invalid Parameter) {String} message
- *                                              "ChatId have to be an integer"
+ *                                             "ChatId have to be an integer"
  * 
  * @apiError (400: Invalid Parameter) {String} message "The chat Id does not exist"
  * 
- * @apiError (400: Invalid Parameter) {String} message "The user unidentified"
+ * @apiError (400: Invalid User) {String} message "The user unidentified"
  * 
  * @apiError (400: Database error) {String} message "SQL Error"
  * 
@@ -86,8 +86,10 @@ router.get("/:chatId?", (request, response, next) => {
     let userId = request.decoded.memberid;
 
     // getting data from the database 
-    let query = `SELECT Members.MemberID, FirstName, LastName, Nickname, Email FROM Members, ChatMembers
-        WHERE ChatMembers.MemberID = Members.MemberID AND ChatMembers.ChatID=$1`;
+    let query = `SELECT Members.MemberID, FirstName, LastName, Nickname, 
+            Email FROM Members, ChatMembers
+            WHERE ChatMembers.MemberID = Members.MemberID 
+            AND ChatMembers.ChatID=$1`;
 
         // let query = `SELECT ChatID FROM Chats`;
         
@@ -102,14 +104,12 @@ router.get("/:chatId?", (request, response, next) => {
                 // look for the entry with a matching memberId value
                 // or the admin member id(0), we don't want to include
                 // these participants in the member list
-                if (list[i].memberid == userId || list[i].memberid == 0){
+                if (list[i].memberid == userId || list[i].memberid == 0) {
                     // delete object with current member
                     // note we need to decrement i when this occurs so
                     // we don't skip over elements after deleting one
                     list.splice(i--, 1);
-
-                    
-                    
+   
                 }
             }
             // assign the list of chat participants to request.body.list

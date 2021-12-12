@@ -21,7 +21,6 @@ const EMAIL_PASS = process.env.BURNER_EMAIL_PASS;
 // the email that will be used to send emails
 const EMAIL = 'tcss450.1.no.reply@gmail.com';
 
-
 /*
  * Sends an email to the given recieverEmail with the
  * given subject name and message.

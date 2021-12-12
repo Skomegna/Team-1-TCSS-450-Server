@@ -1,12 +1,15 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes messages endpoints including
+ *      - /messages (POST) Request to add a message to a specific chat
+ *      - /messages/:chatId?/:messageId? (GET) Request to get chat messages 
  */
 
 // used to handle requests
 const express = require('express');
 
-//Access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
 
 const router = express.Router();
@@ -26,7 +29,8 @@ let isStringProvided = validation.isStringProvided;
  * @apiName PostMessages
  * @apiGroup Messages
  * 
- * @apiDescription Adds the message from the user associated with the required JWT. 
+ * @apiDescription Adds the message from the user associated with 
+ *                 the required JWT. 
  * 
  * @apiHeader {String} authorization Valid JSON Web Token JWT
  * 
@@ -37,17 +41,25 @@ let isStringProvided = validation.isStringProvided;
  * 
  * @apiError (400: Unknown user) {String} message "unknown email address"
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiError (400: SQL Error) {String} message the reported SQL error details
  * 
- * @apiError (400: Unknown Chat ID) {String} message "invalid chat id"
+ * @apiError (400: Unknown Chat ID) {String} message "invalid chat id"    
+ * 
+ * @apiError (400: Message Insertion Error) {String} message 
+ *           "SQL Error on insert"
+ * 
+ * @apiError (400: ChatId SQL Error) {String} message 
+ *           "SQL Error on chatid check"
  * 
  * @apiUse JSONError
  */ 
 router.post("/", (request, response, next) => {
     //validate on empty parameters
-    if (request.body.chatId === undefined || !isStringProvided(request.body.message)) {
+    if (request.body.chatId === undefined || 
+            !isStringProvided(request.body.message)) {
         response.status(400).send({
             message: "Missing required information"
         });
@@ -81,7 +93,8 @@ router.post("/", (request, response, next) => {
         });
 }, (request, response, next) => {
             // validate memberid exists in the chat
-            let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2';
+            let query = 'SELECT * FROM ChatMembers WHERE ChatId=$1 AND ' + 
+                    'MemberId=$2';
             let values = [request.body.chatId, request.decoded.memberid];
         
             pool.query(query, values)
@@ -104,8 +117,10 @@ router.post("/", (request, response, next) => {
     //add the message to the database
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
-                  RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
-    let values = [request.body.chatId, request.body.message, request.decoded.memberid];
+                  RETURNING PrimaryKey AS MessageId, ChatId, Message, 
+                  MemberId AS email, TimeStamp`;
+    let values = [request.body.chatId, request.body.message, 
+                  request.decoded.memberid];
     pool.query(insert, values)
         .then(result => {
             if (result.rowCount == 1) {
@@ -127,7 +142,8 @@ router.post("/", (request, response, next) => {
             });
         });
 }, (request, response) => {
-        // send a notification of this message to ALL members with registered tokens
+        // send a notification of this message to ALL 
+        // members with registered tokens
         let query = `SELECT token FROM Push_Token
                         INNER JOIN ChatMembers ON
                         Push_Token.memberid=ChatMembers.memberid
@@ -158,23 +174,29 @@ router.post("/", (request, response, next) => {
  * @apiGroup Messages
  * 
  * @apiDescription Request to get the 10 most recent chat messages
- * from the server in a given chat - chatId. If an optional messageId is provided,
- * return the 10 messages in the chat prior to (and not including) the message containing
- * MessageID.
- * 
+ *                 from the server in a given chat - chatId. 
+ *                 If an optional messageId is provided,
+ *                 return the 10 messages in the chat prior to 
+ *                 (and not including) the message containing MessageID.
+ * s
  * @apiParam {Number} chatId the chat to look up. 
- * @apiParam {Number} messageId (Optional) return the 15 messages prior to this message
+ * @apiParam {Number} messageId (Optional) return the 15 messages
+ *                    prior to this message
  * 
  * @apiSuccess {Number} rowCount the number of messages returned
  * @apiSuccess {Object[]} messages List of massages in the message table
  * @apiSuccess {String} messages.messageId The id for this message
- * @apiSuccess {String} messages.email The email of the user who posted this message
+ * @apiSuccess {String} messages.email The email of the 
+ *                                     user who posted this message
  * @apiSuccess {String} messages.message The message text
- * @apiSuccess {String} messages.timestamp The timestamp of when this message was posted
+ * @apiSuccess {String} messages.timestamp The timestamp of when this 
+ *                                         message was posted
  * 
  * @apiError (404: ChatId Not Found) {String} message "Chat ID Not Found"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed parameter. chatId must be a number" 
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiError (400: SQL Error) {String} message the reported SQL error details
  * 
@@ -222,8 +244,11 @@ router.get("/:chatId?/:messageId?", (request, response, next) => {
             request.params.messageId = 2**31 - 1;
         }
 
-        let query = `SELECT Messages.PrimaryKey AS messageId, Members.Nickname, Messages.Message, 
-                    to_char(Messages.Timestamp AT TIME ZONE 'PDT', 'YYYY-MM-DD HH24:MI:SS.US' ) AS Timestamp
+        let query = `SELECT Messages.PrimaryKey AS messageId, 
+                    Members.Nickname, Messages.Message, 
+                    to_char(Messages.Timestamp 
+                    AT TIME ZONE 'PDT', 'YYYY-MM-DD HH24:MI:SS.US' ) 
+                    AS Timestamp
                     FROM Messages
                     INNER JOIN Members ON Messages.MemberId=Members.MemberId
                     WHERE ChatId=$1 AND Messages.PrimaryKey < $2

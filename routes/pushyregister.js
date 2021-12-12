@@ -1,6 +1,10 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains the endpoints
+ *      - /auth (PUT) for inserting a pushy token for a user
+ *      - /auth (DELETE) for deleting a pushy token for a user
  */
 
 //express is the framework we're going to use to handle requests
@@ -32,7 +36,8 @@ const middleware = require('../middleware/exports');
  * 
  * @apiSuccess {boolean} success true when the pushy token is inserted
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiError (404: User Not Found) {String} message "user not found"
  * 
@@ -114,7 +119,8 @@ router.put('/', middleware.checkToken, (request, response, next) => {
  * 
  * @apiSuccess {boolean} success true when the pushy token is deleted
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiError (404: User Not Found) {String} message "user not found"
  * 

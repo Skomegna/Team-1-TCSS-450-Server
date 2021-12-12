@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes endpoint /password/reset (PUT) Request to reset one's password
  */
 
 const express = require('express');

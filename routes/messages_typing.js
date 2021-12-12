@@ -11,15 +11,11 @@ const router = express.Router();
 
 const pool = require('../utilities/exports').pool;
 
-const validation = require('../utilities/exports').validation;
-let isStringProvided = validation.isStringProvided;
-
 const sendTypingNotif = require('../utilities/exports').pushyTools.sendTypingNotif;
 
 
 /**
- * @api {post} /messages/typing Request to send a pushy notification
-               notifying users that someone started or stopped typing
+ * @api {post} /messages/typing Request to send a pushy notification notifying users that someone started or stopped typing
  * @apiName PostMessageTyping
  * @apiGroup Messages/Typing
  * 
@@ -36,20 +32,26 @@ const sendTypingNotif = require('../utilities/exports').pushyTools.sendTypingNot
  * @apiSuccess (Success 200) {boolean} success true when the 
                                        pushy messages have been sent
  *
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Malformed Parameter) {String} message "Malformed parameter. chatId must be a number"
+ * @apiError (400: Malformed Parameter) {String} message 
+ *           "Malformed parameter. chatId must be a number"
  * 
  * @apiError (400: Unknown Chat ID) {String} message "Chat ID not found"
  * 
  * @apiError (400: Chat ID Error) {String} message "SQL Error on chatid check"
  * 
- * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"                  
+ * @apiError (400: User Not in Chat) {String} message "user not in chat"
+ * 
+ * @apiError (400: Push Token Error) {String} message 
+ *           "SQL Error on select from push token"                  
  */ 
 router.post('/', (request, response, next) => {
     // the JWT is already checked, so now check for the chatId 
     // and whether or not 
-    if (request.body.chatId == undefined || request.body.isStartingToType == undefined) {
+    if (request.body.chatId == undefined || 
+            request.body.isStartingToType == undefined) {
         response.status(400).send({
             message: "Missing required information"
         });

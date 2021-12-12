@@ -1,18 +1,16 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes the auth/verify (POST) request for verifying an account using a code
  */
 
-//express is the framework we're going to use to handle requests
 const express = require('express');
 
-//Create a new instance of express router
 var router = express.Router();
 
-//Access the connection to Heroku Database
 const pool = require('../utilities').pool;
 
-//validation tools
 const validation = require('../utilities').validation;
 const deleteVerificationCodeRow = require('../utilities').validation.deleteVerificationCodeRow;
 let isStringProvided = validation.isStringProvided;
@@ -44,19 +42,24 @@ let isStringProvided = validation.isStringProvided;
  *         "message": "Thank you for verifying",
  *     }
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Incorrect Account) {String} message "Incorrect account information"
+ * @apiError (400: Incorrect Account) {String} message 
+ *           "Incorrect account information"
  * 
- * @apiError (400: Incorrect Code) {String} message "Incorrect Code"
+ * @apiError (400: Incorrect Code) {String} message 
+ *           "Incorrect Code"
  * 
- * @apiError (400: Wrong Email) {String} message "Please check credentials and try again."
+ * @apiError (400: Wrong Email) {String} message 
+ *           "Please check credentials and try again."
  * 
  * @apiError (400: Other Error) {String} message "other error, see detail"
  * @apiError (400: Other Error) {String} detail  Information about the error
  */ 
 router.post("/", (request, response, next) => {
-    if (isStringProvided(request.body.email) && isStringProvided(request.body.code)) {
+    if (isStringProvided(request.body.email) && 
+            isStringProvided(request.body.code)) {
         next();
     } else {
         response.status(400).send({
@@ -84,15 +87,15 @@ router.post("/", (request, response, next) => {
         })
         .catch((error) => {
             if (error.detail == undefined) {
-                    response.status(400).send({
-                        message: "Please check credentials and try again."
-                    });
-                } else {
-                    response.status(400).send({
-                        message: "other error, see detail",
-                        detail: error.detail     
-                    });
-                };
+                response.status(400).send({
+                    message: "Please check credentials and try again."
+                });
+            } else {
+                response.status(400).send({
+                    message: "other error, see detail",
+                    detail: error.detail     
+                });
+            };
         });
 
 }, (request, response, next) => {

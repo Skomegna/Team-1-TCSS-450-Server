@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes endpoint /password/change (PUT) Request to change one's password
  */
 
 const express = require('express');

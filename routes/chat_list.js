@@ -2,17 +2,14 @@
  * TCSS450 Mobile Applications
  * Fall 2021
  * 
- * Contains the contacts/endpoints including
- *      - chats/list/ (GET)  Gets a user's list of chats
+ * Contains the chats/all (GET) endpoint that returns a
+ * user's list of existing chats
  */
 
-// used to handle requests
 const express = require('express');
 const router = express.Router();
 
-// Access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
-
 
 /**
  * @apiDefine SQLError
@@ -21,9 +18,10 @@ const pool = require('../utilities/exports').pool;
  */ 
 
 /**
- * @api {get} /chats/all/ Request to get a list chats the requester is a member in.
+ * @api {get} chats/all Request to get the list of chats the 
+                        requester is a member in.
  * @apiName GetChats
- * @apiGroup Chats/All/
+ * @apiGroup Chats
  * 
  * @apiDescription Responds with a list of chat objects the
                    request sender is a member of. Each chat object contains 
@@ -87,6 +85,4 @@ router.get('/', (request, response) => {
         });
 });
 
-module.exports = router; 
-
-
+module.exports = router;

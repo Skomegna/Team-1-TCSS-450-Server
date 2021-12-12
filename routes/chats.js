@@ -1,12 +1,17 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains endpoints for chats including
+ *      - /chats (POST) Request to add a chat
+ *      - /chats/:chatId? (PUT) Request add a list of users to a chat
+ *      - /chats/:chatId? (GET) Request to get the emails of user in a chat
+ *      - /chats/:chatId?/:email/:message? (DELETE) Request to delete 
+ *                                                  a user from a chat
  */
 
-// use express to handle requests
 const express = require('express');
 
-// access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
 
 const router = express.Router();
@@ -29,8 +34,9 @@ let isStringProvided = validation.isStringProvided;
 
 
 
+
 /*
- * Given a list of memberIds request.body.memberIds, 
+ * Given a list of memberIds at request.body.memberIds, 
  * filter out all memberIds that are not in the members 
  * table or correspond to members who are not verified.
  * 
@@ -79,8 +85,9 @@ function filterChatIds(request, response, next) {
                 });
             });
         }
-
 };
+
+
 
 
 
@@ -89,6 +96,7 @@ function filterChatIds(request, response, next) {
  * chat specified by request.body.chatId
  * 
  * Can cause a 400 error "Error occurred while adding members" 
+ * if an unexpected error occurs
  */
 function addChatMembers(request, response, next) {
     let chatId = request.body.chatId;
@@ -122,7 +130,7 @@ function addChatMembers(request, response, next) {
 
 
 /**
- * @api {post} /chats Request to add a chat
+ * @api {post} chats Request to add a chat
  * @apiName PostChats
  * @apiGroup Chats
  * 
@@ -146,13 +154,17 @@ function addChatMembers(request, response, next) {
  * @apiSuccess (Success 201) {boolean} success true when the name is inserted
  * @apiSuccess (Success 201) {Number} chatId the generated chatId
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Member Insertion Error) {String} message "Error occurred while adding members"
+ * @apiError (400: Member Insertion Error) {String} message 
+ *           "Error occurred while adding members"
  * 
- * @apiError (400: Message Insertion Error) {String} message "SQL Error inserting message"
+ * @apiError (400: Message Insertion Error) {String} message 
+ *           "SQL Error inserting message"
  * 
- * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
+ * @apiError (400: Push Token Error) {String} message 
+ *           "SQL Error on select from push token"
  * 
  * @apiError (400: Unknown Error) message "unknown error"
  * 
@@ -192,7 +204,8 @@ router.post("/", (request, response, next) => {
     // we added the other members, but we should also add the person 
     // who sent the request and the admin member
     // note: the admin memberId is 0
-    let query = "INSERT INTO ChatMembers (chatid, memberid) VALUES ($1, 0), ($1, $2)";
+    let query = "INSERT INTO ChatMembers (chatid, memberid) VALUES " + 
+            "($1, 0), ($1, $2)";
     let values = [request.body.chatId, request.decoded.memberid];
 
     pool.query(query, values)
@@ -211,7 +224,8 @@ router.post("/", (request, response, next) => {
     // note the member that is sending this message is admin
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
-                  RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
+                  RETURNING PrimaryKey AS MessageId, ChatId, Message, 
+                  MemberId AS email, TimeStamp`;
     let values = [request.body.chatId,
                   request.body.firstMessage,
                   0];
@@ -266,7 +280,7 @@ router.post("/", (request, response, next) => {
 
 
 /**
- * @api {put} /chats/:chatId? Request add a list of users to a chat
+ * @api {put} chats/:chatId? Request add a list of users to a chat
  * @apiName PutChats
  * @apiGroup Chats
  * 
@@ -283,17 +297,21 @@ router.post("/", (request, response, next) => {
  * 
  * @apiError (404: Chat Not Found) {String} message "chatID not found"
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
+ * @apiError (400: Invalid Parameter) {String} message
+ *           "Malformed parameter. chatId must be a number" 
  * 
  * @apiError (400: Chat Not Found) {String} message "Chat ID not found"
  * 
  * @apiError (400: Unknown Error) message "unknown error"
  * 
- * @apiError (400: Message Insertion Error) {String} message "SQL Error inserting message"
+ * @apiError (400: Message Insertion Error) {String} message 
+ *           "SQL Error inserting message"
  * 
- * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
+ * @apiError (400: Push Token Error) {String} message 
+ *           "SQL Error on select from push token"
  * 
  * @apiError (400: SQL Error) {String} message the reported SQL error details
  * 
@@ -348,7 +366,7 @@ router.put("/", (request, response, next) => {
     if (memberIds.length == 0) {
         next();
     } else {
-        let query = `DELETE FROM ChatMembers WHERE `
+        let query = `DELETE FROM ChatMembers WHERE `;
         memberIds.forEach(memberId => {
             query += `(chatid=${request.body.chatId} 
                         and memberid=${memberId}) or `;
@@ -366,13 +384,13 @@ router.put("/", (request, response, next) => {
             })
     }
 
-
 }, addChatMembers, (request, response, next) => {
     // add the add message to the database, note the message is 
     // sent by the TalkBox Admin account
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
-                  RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
+                  RETURNING PrimaryKey AS MessageId, ChatId, Message, 
+                  MemberId AS email, TimeStamp`;
     let values = [request.body.chatId,
                   request.body.message,
                   0];
@@ -428,8 +446,8 @@ router.put("/", (request, response, next) => {
 
 
 /**
- * @api {get} /chats/:chatId? Request to get the emails of user in a chat
- * @apiName GetChats
+ * @api {get} chats/:chatId? Request to get the emails of user in a chat
+ * @apiName GetChatEmails
  * @apiGroup Chats
  * 
  * @apiDescription Request to return all of the emails that correspond
@@ -446,8 +464,10 @@ router.put("/", (request, response, next) => {
  * @apiSuccess {String} messages.email The email for the member in the chat
  * 
  * @apiError (404: ChatId Not Found) {String} message "Chat ID Not Found"
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed parameter. chatId must be a number" 
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiError (400: SQL Error) {String} message the reported SQL error details
  * 
@@ -490,7 +510,8 @@ router.get("/:chatId", (request, response, next) => {
         //Retrieve the members
         let query = `SELECT Members.Email 
                     FROM ChatMembers
-                    INNER JOIN Members ON ChatMembers.MemberId=Members.MemberId
+                    INNER JOIN Members 
+                    ON ChatMembers.MemberId=Members.MemberId
                     WHERE ChatId=$1`;
         let values = [request.params.chatId];
         pool.query(query, values)
@@ -507,8 +528,10 @@ router.get("/:chatId", (request, response, next) => {
             });
 });
 
+
 /**
- * @api {delete} /chats/:chatId?/:email/:message? Request delete a user from a chat
+ * @api {delete} /chats/:chatId?/:email/:message? Request to delete a user 
+ *                                                from a chat
  * @apiName DeleteChats
  * @apiGroup Chats
  * 
@@ -522,9 +545,11 @@ router.get("/:chatId", (request, response, next) => {
  * 
  * @apiSuccess {boolean} success true when the name is deleted
  *
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  *  
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number" 
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed parameter. chatId must be a number" 
  * 
  * @apiError (404: Chat Not Found) {String} message "chatID not found"
  *
@@ -532,9 +557,13 @@ router.get("/:chatId", (request, response, next) => {
  *
  * @apiError (400: Duplicate Email) {String} message "user not in chat"
  * 
+ * @apiError (400: Message Insertion Error) {String} message 
+ *           "SQL Error inserting message"
+ * 
  * @apiError (400: Unknown Error) message "unknown error"
  * 
- * @apiError (400: Push Token Error) {String} message "SQL Error on select from push token"
+ * @apiError (400: Push Token Error) {String} message 
+ *           "SQL Error on select from push token"
  * 
  * @apiUse SQLError
  * 
@@ -638,7 +667,8 @@ router.delete("/:chatId/:email/:message", (request, response, next) => {
     // send the leave message to the chat room from the Admin account
     let insert = `INSERT INTO Messages(ChatId, Message, MemberId)
                   VALUES($1, $2, $3) 
-                  RETURNING PrimaryKey AS MessageId, ChatId, Message, MemberId AS email, TimeStamp`;
+                  RETURNING PrimaryKey AS MessageId, ChatId, Message,
+                   MemberId AS email, TimeStamp`;
     let values = [request.params.chatId,
                   request.params.message,
                   0];

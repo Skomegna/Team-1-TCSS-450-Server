@@ -6,13 +6,15 @@
  *      - contacts/requests (POST) Create a new contact request
  *      - contacts/requests (GET)  Gets a list of contact requests
  *      - contacts/requests (PUT)  Accepts or rejects a contact request
+ *      - contacts/requests/:contactID?/ (DELETE) Request to delete an 
+ *                                        outgoing contact request
+ *      - /contacts/requests/search/:identifier?/:identifierType?  (GET)
+ *            Request to search for potential contacts
  */
 
-// used to handle requests
 const express = require('express');
 const router = express.Router();
 
-// Access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
 
 const validation = require('../utilities').validation;
@@ -24,10 +26,11 @@ const getContactInfo = databaseUtils.getContactInfo;
 
 const push_tools = require('../utilities/exports').pushyTools;
 const sendNewContactRequestNotif = push_tools.sendNewContactRequestNotif;
-const sendContactRequestResponseNotif = push_tools.sendContactRequestResponseNotif;
-const sendContactRequestDeletionNotif = push_tools.sendContactRequestDeletionNotif;
+const sendContactRequestResponseNotif = 
+        push_tools.sendContactRequestResponseNotif;
+const sendContactRequestDeletionNotif = 
+        push_tools.sendContactRequestDeletionNotif;
 
-// validation tools
 let isStringProvided = validation.isStringProvided;
 
 /**
@@ -41,16 +44,12 @@ let isStringProvided = validation.isStringProvided;
  * @apiError (400: SQL Error) {String} error   the error
  */ 
 
- 
-
 /**
  * @apiDefine PushError
  * @apiError (400: SQL Push Error) {String} message 
               "SQL Error on select from push token"
  * @apiError (400: SQL Push Error) {String} error the error
  */ 
-
-
 
 
 /**
@@ -121,7 +120,8 @@ router.post('/', (request, response, next) => {
     // check to make sure the required identifier and identifier type 
     // is provided
     // note: the JWT has already been checked by this point.
-    if (!isStringProvided(request.body.identifier) || !isStringProvided(request.body.identifierType)) {
+    if (!isStringProvided(request.body.identifier) || 
+            !isStringProvided(request.body.identifierType)) {
         response.status(400).send({ 
             message: "Missing required information"
         });
@@ -254,7 +254,6 @@ router.post('/', (request, response, next) => {
 });
 
 
-
 /**
  * @api {get} /contacts/requests Request to recieve all contact requests an
                                  account has been sent and has sent.
@@ -341,7 +340,8 @@ router.get('/', (request, response, next) => {
     // at this point request.body.contactInfoList will contain the contact
     // information for the users who sent the requester's account
     // a contact request. 
-    request.body.receivedRequestContacts = request.body.contactInfoList.reverse();
+    request.body.receivedRequestContacts = 
+            request.body.contactInfoList.reverse();
     
     
     // get the member Ids for the contacts who this
@@ -378,7 +378,6 @@ router.get('/', (request, response, next) => {
         sentRequests: request.body.sentRequestContacts
     });
 });
-
 
 
 
@@ -543,8 +542,10 @@ router.put('/', (request, response, next) => {
 });
 
 
+
 /**
- * @api {delete} /contacts/requests/:contactID?/ Request to delete an outgoing contact request
+ * @api {delete} /contacts/requests/:contactID?/ Request to delete an 
+ *                                               outgoing contact request
  * @apiName DeleteOutgoingContactRequest
  * @apiGroup Contacts/Requests
  * 
@@ -563,9 +564,11 @@ router.put('/', (request, response, next) => {
  * 
  * @apiSuccess {boolean} success true when the list is created and sent 
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed parameter. contactID must be a number"
  *
  * @apiUse SQLError
  * 
@@ -635,7 +638,8 @@ router.put('/', (request, response, next) => {
 
 
 /**
- * @api {get} /contacts/requests Request to create a contact request
+ * @api {get} /contacts/requests/search/:identifier?/:identifierType? 
+              Request to search for potential contacts
  * @apiName GetContactRequestSearchList
  * @apiGroup Contacts/Requests/Search
  * 
@@ -689,7 +693,8 @@ router.put('/', (request, response, next) => {
  * @apiUse SQLError
  * 
  */
- router.get('/search/:identifier?/:identifierType?', (request, response, next) => {
+ router.get('/search/:identifier?/:identifierType?', 
+        (request, response, next) => {
     // check to make sure the required identifier and identifier type 
     // is provided
     // note: the JWT has already been checked by this point.
@@ -724,14 +729,17 @@ router.put('/', (request, response, next) => {
     let value = request.params.identifier.toLowerCase();
 
     let query = `select memberid from Members       
-                 where lower(${request.params.identifierType}) LIKE '${value}%' and 
-                 not memberid=0 and not memberid=${request.decoded.memberid} 
+                 where lower(${request.params.identifierType}) 
+                 LIKE '${value}%' 
+                 and not memberid=0 
+                 and not memberid=${request.decoded.memberid} 
                  and memberid NOT IN 
                     (select memberid_b from contacts where memberid_a=$1) 
                         and memberid NOT IN 
                         (select memberid_a from contacts where memberid_b=$1) 
                             and memberid not in 
-                            (select memberid_b from contact_requests where memberid_a = $1) LIMIT 20`;
+                            (select memberid_b from contact_requests 
+                                where memberid_a = $1) LIMIT 20`;
     let values = [request.decoded.memberid];
 
     pool.query(query, values) 

@@ -334,7 +334,6 @@ function getContactInfo(request, response, next) {
         }
 }
 
-
 module.exports = {
     checkNickname, 
     checkNicknameExists, 
