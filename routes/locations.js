@@ -3,11 +3,13 @@
  * Fall 2021
  * 
  * Contains the locations/ endpoint
- *      - locations/ (GET)  Gets a user's list of saved locations
+ *      - weather/locations/ (GET) Gets a user's list of saved locations
+ *      - weather/locations/ (POST) Request to save a new location
+ *      - weather/locations/ (DELETE) Request to delete a particular
+ *                                    saved location
  */
 
 
-// used to handle requests
 const express = require('express');
 const router = express.Router();
 
@@ -38,7 +40,8 @@ const MAX_LOCATIONS_ALLOWED = 10;
  */
 
 /**
- * @api {get} /weather/locations/ Request to get the list of all saved weather locations for a particular account
+ * @api {get} weather/locations/ Request to get the list of all saved 
+ *            weather locations for a particular account
  * @apiName GetLocations
  * @apiGroup Weather/Locations
  * 
@@ -92,7 +95,7 @@ router.get('/', (request, response) => {
 
 
 /**
- * @api {post} /weather/locations/ Request to save a new location
+ * @api {post} weather/locations/ Request to save a new location
  * @apiName PostLocation
  * @apiGroup Weather/Locations
  * 
@@ -113,17 +116,20 @@ router.get('/', (request, response) => {
  * 
  * @apiSuccess {boolean} success true when the new location is saved
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *                                     "Missing required information"
                                        Occurs if BOTH zipcode and 
                                        lat/long values are not given.
  * 
  * @apiError (400: Too Many Locations) {String} message "Location Storage Full"
-                                       Occurs if more 10 locations are stored 
+                                       Occurs if 10 locations are stored 
                                        for a particular user 
  * @apiError (400: Invalid ZipCode) {String} message 
-                                       "Malformed parameter. Zip Code must be five digits"
+                                       "Malformed parameter. Zip Code must 
+                                       be five digits"
  *
- * @apiError (400: Duplicate Location) {String} message "Location already exists"                               
+ * @apiError (400: Duplicate Location) {String} message 
+ *                                     "Location already exists"                               
  * 
  * @apiUse SQLError
  */
@@ -139,8 +145,8 @@ router.post('/', (request, response, next) => {
             if (result.rowCount < MAX_LOCATIONS_ALLOWED) {
                 next();
             } else {
-                // throw a failure response if the usr can not add another 
-                // location. Error thrown will cause the following catch to happen
+                // throw a failure response if the user can not add another 
+                // location. 
                 response.status(400).send({
                     message: "Location Storage Full",
                 });
@@ -246,7 +252,8 @@ function addLatLong(request, response, next) {
 
                 // check to make sure that the given zipcode 
                 // produced valid lat/longs
-                // note: a zipcode that results in lat:0  long:0 will be marked as invalid
+                // note: a zipcode that results in 
+                // lat:0 long:0 will be marked as invalid
                 
                 if (request.body.lat == 0 && request.body.long == 0) {
                     // causes the catch block to run
@@ -266,10 +273,9 @@ function addLatLong(request, response, next) {
 
 
 
-
-
 /**
- * @api {delete} /weather/locations/ Request to delete a particular saved location
+ * @api {delete} weather/locations/ Request to delete 
+ *               a particular saved location
  * @apiName DeleteLocation
  * @apiGroup Weather/Locations
  * 
@@ -282,8 +288,8 @@ function addLatLong(request, response, next) {
  *
  * @apiSuccess {boolean} success true when the location is deleted
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
- * 
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
  * @apiUse SQLError               
  */

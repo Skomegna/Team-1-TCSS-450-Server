@@ -7,11 +7,9 @@
  *      - contacts/ (DELETE) Delete a particular contact
  */
 
-// used to handle requests
 const express = require('express');
 const router = express.Router();
 
-// Access the connection to Heroku Database
 const pool = require('../utilities/exports').pool;
 
 const validation = require('../utilities').validation;
@@ -23,8 +21,6 @@ const sendContactDeletionNotif = push_tools.sendContactDeletionNotif;
 const databaseUtils = require('../utilities/exports').database;
 const getContactInfo = databaseUtils.getContactInfo;
 
-// validation tools
-let isStringProvided = validation.isStringProvided;
 
 /**
  * @apiDefine JSONError
@@ -45,7 +41,7 @@ let isStringProvided = validation.isStringProvided;
  */ 
 
 /**
- * @api {get} /contacts/ Request to get a list of a user's contacts
+ * @api {get} contacts/ Request to get a list of a user's contacts
  * @apiName GetContacts
  * @apiGroup Contacts/
  * 
@@ -142,7 +138,7 @@ router.get('/', (request, response, next) => {
 
 
 /**
- * @api {delete} /contacts/:contactID?/ Request to delete a contact
+ * @api {delete} contacts/:contactID?/ Request to delete a contact
  * @apiName DeleteContact
  * @apiGroup Contacts/
  * 
@@ -161,9 +157,11 @@ router.get('/', (request, response, next) => {
  * 
  * @apiSuccess {boolean} success true when the list is created and sent 
  * 
- * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ * @apiError (400: Missing Parameters) {String} message 
+ *           "Missing required information"
  * 
- * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. contactID must be a number"
+ * @apiError (400: Invalid Parameter) {String} message 
+ *           "Malformed parameter. contactID must be a number"
  *
  * @apiUse SQLError
  * 

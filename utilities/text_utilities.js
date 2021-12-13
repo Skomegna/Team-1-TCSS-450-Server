@@ -1,7 +1,7 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
-
+ *
  * 
  * Contains helper functions that can be inserted in 
  * endpoint function chains that check the validity of given parameters

@@ -1,12 +1,12 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes the /auth (GET) Request to sign a user in the system
  */
 
-//express is the framework we're going to use to handle requests
 const express = require('express');
 
-//Access the connection to Heroku Database
 const pool = require('../utilities').pool;
 
 const validation = require('../utilities').validation;
@@ -27,7 +27,7 @@ const config = {
 };
 
 /**
- * @api {get} /auth Request to sign a user in the system
+ * @api {get} auth Request to sign a user in the system
  * @apiName GetAuth
  * @apiGroup Auth
  * 
@@ -49,17 +49,20 @@ const config = {
  *       "token": "eyJhbGciO...abc123"
  *     }
  * 
- * @apiError (400: Missing Authorization Header) {String} message "Missing Authorization Header"
+ * @apiError (400: Missing Authorization Header) {String} message 
+ *           "Missing Authorization Header"
  * 
- * @apiError (400: Malformed Authorization Header) {String} message "Malformed Authorization Header"
+ * @apiError (400: Malformed Authorization Header) {String} message 
+ *           "Malformed Authorization Header"
  * 
  * @apiError (400: Invalid Parameter) {String} message "Invalid Parameter"
  * @apiError (400: Invalid Parameter) {String} detail  Explanation of what's 
-                                                       wrong with the parametere
+                                                       wrong with the parameter
  * 
  * @apiError (404: User Not Found) {String} message "User not found"
  * 
- * @apiError (400: Invalid Credentials) {String} message "Credentials did not match"
+ * @apiError (400: Invalid Credentials) {String} message 
+ *           "Credentials did not match"
  * 
  * @apiError (400: Unverified Email) {String} message "Email is not verified"
  * 
@@ -67,16 +70,20 @@ const config = {
  * @apiError (400: Other Error) {String} detail  Information about the errorr
  */ 
 router.get('/', (request, response, next) => {
-    if (isStringProvided(request.headers.authorization) && request.headers.authorization.startsWith('Basic ')) {
+    if (isStringProvided(request.headers.authorization) && 
+            request.headers.authorization.startsWith('Basic ')) {
         next();
     } else {
-        response.status(400).json({ message: 'Missing Authorization Header' });
+        response.status(400).json({ 
+            message: 'Missing Authorization Header'
+        });
     };
 }, (request, response, next) => {
     // obtain auth credentials from HTTP Header
     const base64Credentials =  request.headers.authorization.split(' ')[1];
     
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const credentials = 
+            Buffer.from(base64Credentials, 'base64').toString('ascii');
 
     const [email, password] = credentials.split(':');
 
@@ -107,7 +114,8 @@ router.get('/', (request, response, next) => {
                 return;
             };
 
-            //Retrieve the salt used to create the salted-hash provided from the DB
+            //Retrieve the salt used to create the
+            // salted-hash provided from the DB
             let salt = result.rows[0].salt;
             
             //Retrieve the salted-hash password provided from the DB
@@ -142,7 +150,7 @@ router.get('/', (request, response, next) => {
                     message: 'Authentication successful!',
                     token: token
                 });
-            } else if (storedSaltedHash != providedSaltedHash){
+            } else if (storedSaltedHash != providedSaltedHash) {
                 //credentials dod not match
                 response.status(400).send({
                     message: 'Credentials did not match' 

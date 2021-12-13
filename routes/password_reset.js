@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes endpoint /password/reset (PUT) Request to reset one's password
  */
 
 const express = require('express');
@@ -21,7 +23,7 @@ const checkEmail = textUtils.checkEmail;
 const checkPassword = textUtils.checkPassword;  
 
 /**
- * @api {put} /password/reset Request to reset one's password
+ * @api {put} password/reset Request to reset one's password
  * @apiName PasswordReset
  * @apiGroup Password
  * 

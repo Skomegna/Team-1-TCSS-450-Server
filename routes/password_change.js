@@ -1,6 +1,8 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Includes endpoint /password/change (PUT) Request to change one's password
  */
 
 const express = require('express');
@@ -18,7 +20,7 @@ const generateSalt = require('../utilities').generateSalt;
 const router = express.Router();
 
 /**
- * @api {put} /password/change Request to change one's password
+ * @api {put} password/change Request to change one's password
  * @apiName PasswordChange
  * @apiGroup Password
  * 

@@ -1,6 +1,8 @@
 /**
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains helper functions used for the weather
  */
 
 
@@ -11,10 +13,13 @@
  function dtToHumanDate(request, response, next) {
      // Time for a time-zone in which a local machine is.
     let currentTimeLocal = new Date();
-    // this is the current time with NO timezone applied - this is a universal value
-    let currentTimeUTC = currentTimeLocal.getTime() + (currentTimeLocal.getTimezoneOffset() * 60 * 1000);
+    // this is the current time with NO timezone applied
+    // - this is a universal value
+    let currentTimeUTC = currentTimeLocal.getTime() + 
+            (currentTimeLocal.getTimezoneOffset() * 60 * 1000);
     // now we apply the timezone offset provided by our API
-    let currentTimeRequestedLocation = currentTimeUTC + (request.body.data.timezone_offset * 1000);
+    let currentTimeRequestedLocation = currentTimeUTC +
+             (request.body.data.timezone_offset * 1000);
     request.body.humanTime = currentTimeRequestedLocation;
     
     next();
@@ -125,8 +130,6 @@ function createDailyWeather(request, response, next) {
     request.body.dailyData = days;
     next();
 }
-
-
 
 module.exports = {
     dtToHumanDate,

@@ -1,17 +1,16 @@
 /*
  * TCSS450 Mobile Applications
  * Fall 2021
+ * 
+ * Contains the /auth (POST) Request to register a user
  */
   
-// used to handle requests
 const express = require('express');
 
-// Access the connection to Heroku Database
 const pool = require('../utilities').pool;
 
 const validation = require('../utilities').validation;
 
-// validation tools
 let isStringProvided = validation.isStringProvided;
 
 const checkNickname = require('../utilities').database.checkNickname;
@@ -34,7 +33,7 @@ const checkNames = textUtils.checkNames;
 
 
 /**
- * @api {post} /auth Request to register a user
+ * @api {post} auth Request to register a user
  * @apiName PostAuth
  * @apiGroup Auth
  * 
@@ -121,9 +120,9 @@ router.post('/', (request, response, next) => {
     let salt = generateSalt(32);
     let salted_hash = generateHash(password, salt);
 
-    //We're using placeholders ($1, $2, $3) in the SQL query string to avoid SQL Injection
-    //If you want to read more: https://stackoverflow.com/a/8265319
-    let theQuery = "INSERT INTO MEMBERS(FirstName, LastName, Nickname, Email, Password, Salt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING Email";
+    let theQuery = "INSERT INTO MEMBERS(FirstName, LastName, Nickname, " + 
+            "Email, Password, Salt) VALUES ($1, $2, $3, $4, $5, $6) " + 
+            "RETURNING Email";
     let values = [first, last, nickname, email, salted_hash, salt];
     pool.query(theQuery, values)
         .then(result => {
@@ -142,7 +141,9 @@ router.post('/', (request, response, next) => {
 }, deleteVerificationCodeRow, createAndStoreCode, (request, response) => {
     const email = (request.body.email).toLowerCase();
     const code = request.body.code;
-    sendEmail(email, "Welcome to our App!", "Please verify your Email account.\n" + "Your Verification Code: " + code);
+    sendEmail(email, "Welcome to our App!",
+             "Please verify your Email account.\n" + 
+                    "Your Verification Code: " + code);
     response.status(201).send({
         success: true,
         email: email

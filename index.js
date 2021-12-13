@@ -10,7 +10,6 @@ const app = express();
 
 let middleware = require('./middleware');
 
-
 /*
  * This middleware function parses JASOn in the body of POST requests
  */
@@ -53,8 +52,6 @@ app.use('/chats', middleware.checkToken, require('./routes/chats.js'));
 app.use('/contacts', middleware.checkToken, require('./routes/contacts.js'));
 
 app.use('/contacts/requests', middleware.checkToken, require('./routes/contact_requests.js'));
-
-
 
 
 /*
