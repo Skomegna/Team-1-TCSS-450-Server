@@ -25,7 +25,7 @@ let isStringProvided = validation.isStringProvided;
  */ 
 
 /**
- * @api {post} /messages Request to add a message to a specific chat
+ * @api {post} messages Request to add a message to a specific chat
  * @apiName PostMessages
  * @apiGroup Messages
  * 
@@ -169,7 +169,7 @@ router.post("/", (request, response, next) => {
 });
 
 /**
- * @api {get} /messages/:chatId?/:messageId? Request to get chat messages 
+ * @api {get} messages/:chatId?/:messageId? Request to get chat messages 
  * @apiName GetMessages
  * @apiGroup Messages
  * 

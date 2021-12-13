@@ -40,7 +40,7 @@ const MAX_LOCATIONS_ALLOWED = 10;
  */
 
 /**
- * @api {get} /weather/locations/ Request to get the list of all saved 
+ * @api {get} weather/locations/ Request to get the list of all saved 
  *            weather locations for a particular account
  * @apiName GetLocations
  * @apiGroup Weather/Locations
@@ -95,7 +95,7 @@ router.get('/', (request, response) => {
 
 
 /**
- * @api {post} /weather/locations/ Request to save a new location
+ * @api {post} weather/locations/ Request to save a new location
  * @apiName PostLocation
  * @apiGroup Weather/Locations
  * 
@@ -274,7 +274,7 @@ function addLatLong(request, response, next) {
 
 
 /**
- * @api {delete} /weather/locations/ Request to delete 
+ * @api {delete} weather/locations/ Request to delete 
  *               a particular saved location
  * @apiName DeleteLocation
  * @apiGroup Weather/Locations

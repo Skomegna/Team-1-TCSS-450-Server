@@ -41,7 +41,7 @@ const getContactInfo = databaseUtils.getContactInfo;
  */ 
 
 /**
- * @api {get} /contacts/ Request to get a list of a user's contacts
+ * @api {get} contacts/ Request to get a list of a user's contacts
  * @apiName GetContacts
  * @apiGroup Contacts/
  * 
@@ -138,7 +138,7 @@ router.get('/', (request, response, next) => {
 
 
 /**
- * @api {delete} /contacts/:contactID?/ Request to delete a contact
+ * @api {delete} contacts/:contactID?/ Request to delete a contact
  * @apiName DeleteContact
  * @apiGroup Contacts/
  * 

@@ -22,7 +22,7 @@ const createAndStoreCode = require('../utilities').validation.createAndStoreCode
 const router = express.Router();
 
 /**
- * @api {post} /auth/resendcode Send a new verification code to user
+ * @api {post} auth/resendcode Send a new verification code to user
  * @apiName ResendCodeAuth
  * @apiGroup Auth/ResendCode
  * 

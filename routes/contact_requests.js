@@ -53,7 +53,7 @@ let isStringProvided = validation.isStringProvided;
 
 
 /**
- * @api {post} /contacts/requests Request to create a contact request
+ * @api {post} contacts/requests Request to create a contact request
  * @apiName PostContactRequest
  * @apiGroup Contacts/Requests
  * 
@@ -383,7 +383,7 @@ router.get('/', (request, response, next) => {
 
 
 /**
- * @api {put} /contacts/requests Request to accept or reject a contact request
+ * @api {put} contacts/requests Request to accept or reject a contact request
  * @apiName PutContactRequest
  * @apiGroup Contacts/Requests
  * 
@@ -544,7 +544,7 @@ router.put('/', (request, response, next) => {
 
 
 /**
- * @api {delete} /contacts/requests/:contactID?/ Request to delete an 
+ * @api {delete} contacts/requests/:contactID?/ Request to delete an 
  *                                               outgoing contact request
  * @apiName DeleteOutgoingContactRequest
  * @apiGroup Contacts/Requests
@@ -638,7 +638,7 @@ router.put('/', (request, response, next) => {
 
 
 /**
- * @api {get} /contacts/requests/search/:identifier?/:identifierType? 
+ * @api {get} contacts/requests/search/:identifier?/:identifierType? 
               Request to search for potential contacts
  * @apiName GetContactRequestSearchList
  * @apiGroup Contacts/Requests/Search

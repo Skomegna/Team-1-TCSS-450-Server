@@ -47,7 +47,7 @@ const locationApiKey = process.env.location_API_Key;
  */
 
 /**
- * @api {get} /weather/:location? Request to get weather data 
+ * @api {get} weather/:location? Request to get weather data 
  * @apiName GetWeather
  * @apiGroup Weather
  * 
@@ -108,7 +108,7 @@ const locationApiKey = process.env.location_API_Key;
     ]
 }
  *   
-* @apiError (404: Missing Parameters) {String} message
+ * @apiError (404: Missing Parameters) {String} message
  *                                              "Missing Location params"
  *    
  * @apiError (404: Missing Parameters) {String} message

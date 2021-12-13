@@ -23,7 +23,7 @@ const checkEmail = textUtils.checkEmail;
 const checkPassword = textUtils.checkPassword;  
 
 /**
- * @api {put} /password/reset Request to reset one's password
+ * @api {put} password/reset Request to reset one's password
  * @apiName PasswordReset
  * @apiGroup Password
  * 

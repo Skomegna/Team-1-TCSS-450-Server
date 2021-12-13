@@ -530,8 +530,7 @@ router.get("/:chatId", (request, response, next) => {
 
 
 /**
- * @api {delete} /chats/:chatId?/:email/:message? Request to delete a user 
- *                                                from a chat
+ * @api {delete} chats/:chatId?/:email/:message? Request to delete a user from a chat
  * @apiName DeleteChats
  * @apiGroup Chats
  * 

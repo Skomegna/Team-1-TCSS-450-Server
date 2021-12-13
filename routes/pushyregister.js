@@ -18,7 +18,7 @@ const router = express.Router();
 const middleware = require('../middleware/exports');
 
 /**
- * @api {put} /auth Request to insert a Pushy Token for the user
+ * @api {put} auth Request to insert a Pushy Token for the user
  * @apiName PutAuth
  * @apiGroup Auth
  * 
@@ -107,7 +107,7 @@ router.put('/', middleware.checkToken, (request, response, next) => {
 });
 
 /**
- * @api {delete} /auth Request to delete a Pushy Token for the user
+ * @api {delete} auth Request to delete a Pushy Token for the user
  * @apiName DeleteAuth
  * @apiGroup Auth
  * 

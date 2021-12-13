@@ -15,7 +15,7 @@ const sendTypingNotif = require('../utilities/exports').pushyTools.sendTypingNot
 
 
 /**
- * @api {post} /messages/typing Request to send a pushy notification notifying users that someone started or stopped typing
+ * @api {post} messages/typing Request to send a pushy notification notifying users that someone started or stopped typing
  * @apiName PostMessageTyping
  * @apiGroup Messages/Typing
  * 

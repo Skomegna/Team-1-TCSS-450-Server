@@ -18,8 +18,7 @@ const pool = require('../utilities/exports').pool;
  */ 
 
 /**
- * @api {get} chats/all Request to get the list of chats the 
-                        requester is a member in.
+ * @api {get} chats/all Request to get the list of chats the requester is a member in.
  * @apiName GetChats
  * @apiGroup Chats
  * 
